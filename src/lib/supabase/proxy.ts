@@ -41,10 +41,14 @@ export async function updateSession(request: NextRequest) {
   const pathname = url.pathname
   const code = url.searchParams.get('code')
 
+  if(!code && pathname === '/pages/resetpass') {
+    return NextResponse.redirect(new URL('/pages/forgotpass?err=Open page through the link sent to your email.', request.url))
+  }
+
   // If Supabase sent us a recovery link to the wrong path (e.g. '/?code=...'),
   // normalize it to the dedicated reset password page.
-  if (code && pathname !== '/pages/forgotpass/resetpass') {
-    const redirectUrl = new URL('/pages/forgotpass/resetpass', request.url)
+  if (code && pathname !== '/pages/resetpass') {
+    const redirectUrl = new URL('/pages/resetpass', request.url)
     redirectUrl.searchParams.set('code', code)
     return NextResponse.redirect(redirectUrl)
   }

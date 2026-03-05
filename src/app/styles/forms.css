@@ -3,6 +3,8 @@
     flex-direction: column;
     width: 300px;
     margin: auto;
+    background-color: var(--secondary-color);
+    padding: 55px;
 }
 
 label {
@@ -11,6 +13,8 @@ label {
 
 input {
     padding: 10px;
+    margin: 20px 0;
+    border: solid;
 }
 
 .toggle-pass {
@@ -30,5 +34,67 @@ input {
     text-align: center;
     background-color: rgb(233, 233, 233);
     padding: 10px;
+}
+
+.password-block {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 20px;
+    margin: 30px 0;
+}
+
+.password {
+    border: solid;
+    border-right: none;
+    flex-grow: 3;
+    height: 100%;
+}
+
+input:focus {
+    outline: none;
+}
+
+.icon {
+    background-color: white;
+    border: solid;
+    height: 100%;
+    flex-grow: 1;
+    padding: 10px;
+    border-left: none;
+    text-align: center;
+}
+
+.view-icon {
+    width: 20px;
+}
+
+.google-login {
+    cursor: pointer;
+    border: solid;
+    border-radius: 10px;
+    padding: 10px 50px;
+    width: 50%;
+    text-align: center;
+    margin: 20px auto;
+    background-color: rgb(109, 109, 109);
+    color: white;
+    border-color: black;
+}
+
+.google-login:hover {
+    background-color: rgb(62, 62, 62);
+}
+
+.login-button {
+    border: solid;
+    width: 40%;
+    margin: 20px auto;
+    padding: 10px;
+    border-radius: 15px;
+}
+
+.or {
+    text-align: center;
 }
 

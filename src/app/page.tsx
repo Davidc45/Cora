@@ -1,23 +1,19 @@
-import { createClient } from "@/lib/supabase/server"
+import Link from "next/link";
 
 export default async function Home() {
-  const supabase = await createClient();
-  const { data: reports } = await supabase.from('reports').select();
-
-  const formattedReports = reports?.map((report) => {
-    return (
-      <div key={report.report_id} className="report">
-        <h3>{report.report_title}</h3>
-        <p>{report.report_description}</p>
-        { report.report_image ? <img /> : <div className="no-image">Empty</div>}
-      </div>
-    )
-  })
-
   return (
     <div className="home-container">
-      <h1>Reports and complaints</h1>
-      { formattedReports?.length == 0 ? <div>no reports yet</div> : formattedReports }
+      <h2 className="home-message">
+        Help keep everyone in your community alert and informed
+        </h2>
+        <h1 className="home-title">CORA</h1>
+        <p className="home-mission-statement">
+          Mission statement is in progress.
+        </p>
+      <div className="home-buttons">
+        <Link href='/pages/explore' className="home-button">Explore</Link>
+        <Link href='/pages/signup' className="home-button">Sign Up</Link>
+      </div>
     </div>
   )
 }
