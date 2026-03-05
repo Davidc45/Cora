@@ -98,3 +98,9 @@ input:focus {
     text-align: center;
 }
 
+.signup-with-google {
+    border: solid;
+    padding: 10px 0;
+    cursor: pointer;
+}
+

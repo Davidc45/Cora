@@ -13,7 +13,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation"
 import { useState } from "react";
 import Err from "@/app/components/err";
-import { RecaptchaWrapper } from "@/app/components/captcha";
 
 
 export default function Login() {
@@ -44,7 +43,6 @@ export default function Login() {
           }
         </div>
       </div>
-      <RecaptchaWrapper action="contact_form"/>
 
       <Link href='/pages/forgotpass'>Forgot Password?</Link>
 

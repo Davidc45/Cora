@@ -29,6 +29,7 @@ export async function login(formData: FormData) {
 }
 
 export async function signup(formData: FormData) {
+  const origin = (await headers()).get('origin')
   const supabase = await createClient()
 
   const rawUsername = trim(formData.get('username'))
@@ -58,6 +59,7 @@ export async function signup(formData: FormData) {
         username: rawUsername,
         full_name: rawUsername,
       },
+      emailRedirectTo: `${origin}`
     },
   })
 
@@ -176,6 +178,7 @@ export async function resetpass(formData: FormData) {
 
 export async function signInWithGoogle() {
   const origin = (await headers()).get('origin')
+  console.log('origin: ', origin)
   const supabase = await createClient()
   const { error, data } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -189,4 +192,8 @@ export async function signInWithGoogle() {
   } else {
     return redirect(data.url)
   }
+}
+
+export async function revalidate() {
+  revalidatePath('/', 'layout')
 }

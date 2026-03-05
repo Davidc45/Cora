@@ -1,6 +1,25 @@
-import Link from "next/link";
+'use client'
 
-export default async function Home() {
+import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { revalidate } from "./components/actions";
+
+export default function Home() {
+  const params = useSearchParams()
+  const code = params.get('code') ?? ""
+  const supabase = createClient()
+  const [test, setTest] = useState('')
+
+  supabase.auth.onAuthStateChange((event, session) => {
+    if(event === 'SIGNED_IN') {
+      console.log('SIGNED_IN', session)
+      setTest('working')
+      revalidate()
+    }
+  })
+
   return (
     <div className="home-container">
       <h2 className="home-message">
@@ -14,6 +33,8 @@ export default async function Home() {
         <Link href='/pages/explore' className="home-button">Explore</Link>
         <Link href='/pages/signup' className="home-button">Sign Up</Link>
       </div>
+      <input type="hidden" name="code" value={code} />
+      <div>{test}</div>
     </div>
   )
 }
