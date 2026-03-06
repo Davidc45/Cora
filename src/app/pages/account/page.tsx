@@ -20,7 +20,11 @@ export default async function Account() {
     .eq('id', user.id)
     .single();
 
-  const username = profile?.username ?? 'there';
+  const username =
+    profile?.username ??
+    (user.user_metadata as { username?: string } | null)?.username ??
+    user.email?.split('@')[0] ??
+    'there';
 
   return (
     <div className="account-container">
