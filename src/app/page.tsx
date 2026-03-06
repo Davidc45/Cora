@@ -15,7 +15,6 @@ export default function Home() {
   supabase.auth.onAuthStateChange((event, session) => {
     if(event === 'SIGNED_IN') {
       console.log('SIGNED_IN', session)
-      setTest('working')
       revalidate()
     }
   })

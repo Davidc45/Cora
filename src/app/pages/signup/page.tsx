@@ -22,6 +22,7 @@ import Link from "next/link";
 import { useFormStatus } from "react-dom";
 import { useEffect, useState } from "react";
 import Err from "@/app/components/err";
+import ReCaptchaProvider from "@/app/components/captchaprovider";
 
 
 function SignupButton() {
@@ -35,7 +36,7 @@ function SignupButton() {
   )
 }
 
-export default function Signup() {
+function Signup() {
     const searchParams = useSearchParams()
     const success = searchParams.get('success')
     const err = searchParams.get('err')
@@ -119,5 +120,13 @@ export default function Signup() {
         { success ? <div className="success">{success}</div> : <></> }
         { err ? <Err message={err} /> : <></> }
       </form>
+    )
+  }
+
+  export default function SignupWithReCaptcha() {
+    return (
+      <ReCaptchaProvider>
+        <Signup />
+      </ReCaptchaProvider>
     )
   }
