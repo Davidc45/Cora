@@ -17,7 +17,6 @@ import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import axios from "axios";
 import ReCaptchaProvider from "@/app/components/captchaprovider";
 import React from "react";
-import { log } from "console";
 
 
 const Login: React.FC = () => {
@@ -31,7 +30,7 @@ const Login: React.FC = () => {
     else { setShowPass(true) }
   }
 
-  const loginWithCaptcha = async (e: FormData) => {
+  const loginWithCaptcha = async (e: React.SubmitEvent<HTMLFormElement>) => {
     if(!executeRecaptcha) {
       console.log('unable to use recaptcha')
       return;
@@ -52,10 +51,9 @@ const Login: React.FC = () => {
 
     if(data.success) {
       console.log('captcha success: ', data);
-      // for when captcha works
-      // login(e);
     } else {
       console.log('error: ', data.score)
+      console.log('e: ', e)
 
     }
   }
