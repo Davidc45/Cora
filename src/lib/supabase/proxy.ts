@@ -51,12 +51,23 @@ export async function updateSession(request: NextRequest) {
   const pathname = url.pathname
   const code = url.searchParams.get('code')
 
+  if(!code && pathname === '/pages/resetpass') {
+    return NextResponse.redirect(new URL('/pages/forgotpass?err=Open page through the link sent to your email.', request.url))
+  }
+
+  // commented out for now because when signing up, the user is redirected to the
+  // home page with a code, and since the home page has a code but isn't the resetpass
+  // page, it you get sent to the redirect page after signing up, which is undesired
   // If Supabase sent us a recovery link to the wrong path (e.g. '/?code=...'),
   // normalize it to the dedicated reset password page.
-  if (code && pathname !== '/pages/forgotpass/resetpass') {
-    const redirectUrl = new URL('/pages/forgotpass/resetpass', request.url)
+  if (code && pathname !== '/pages/resetpass' && pathname !== '/') {
+    const redirectUrl = new URL('/pages/resetpass', request.url)
     redirectUrl.searchParams.set('code', code)
     return NextResponse.redirect(redirectUrl)
+  }
+
+  if(code && pathname === '/') {
+    console.log(path)
   }
 
   // protecting routes

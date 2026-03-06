@@ -64,6 +64,7 @@ export async function login(formData: FormData) {
  * email verification may be enabled in Supabase.
  */
 export async function signup(formData: FormData) {
+  const origin = (await headers()).get('origin')
   const supabase = await createClient()
 
   const rawUsername = trim(formData.get('username'))
@@ -93,6 +94,7 @@ export async function signup(formData: FormData) {
         username: rawUsername,
         full_name: rawUsername,
       },
+      emailRedirectTo: `${origin}`
     },
   })
 
@@ -178,7 +180,7 @@ export async function resetpass(formData: FormData) {
 
   if (!code) {
     redirect(
-      `/pages/forgotpass/resetpass?err=${encodeURIComponent(
+      `/pages/resetpass?err=${encodeURIComponent(
         'Invalid or missing reset code. Please request a new link.'
       )}`
     )
@@ -186,7 +188,7 @@ export async function resetpass(formData: FormData) {
 
   if (!password) {
     redirect(
-      `/pages/forgotpass/resetpass?err=${encodeURIComponent(
+      `/pages/resetpass?err=${encodeURIComponent(
         'Password is required.'
       )}`
     )
@@ -194,7 +196,7 @@ export async function resetpass(formData: FormData) {
 
   if (password !== confirmPassword) {
     redirect(
-      `/pages/forgotpass/resetpass?err=${encodeURIComponent(
+      `/pages/resetpass?err=${encodeURIComponent(
         'Passwords do not match.'
       )}`
     )
@@ -206,7 +208,7 @@ export async function resetpass(formData: FormData) {
 
   if (exchangeError) {
     redirect(
-      `/pages/forgotpass/resetpass?err=${encodeURIComponent(
+      `/pages/resetpass?err=${encodeURIComponent(
         'Reset link is invalid or has expired. Please request a new link.'
       )}`
     )
@@ -218,7 +220,7 @@ export async function resetpass(formData: FormData) {
     const message =
       error.message || 'Failed to reset password. Please try again.'
     redirect(
-      `/pages/forgotpass/resetpass?err=${encodeURIComponent(
+      `/pages/resetpass?err=${encodeURIComponent(
         message
       )}`
     )
@@ -229,4 +231,26 @@ export async function resetpass(formData: FormData) {
       'Password updated. You can now log in.'
     )}`
   )
+}
+
+export async function signInWithGoogle() {
+  const origin = (await headers()).get('origin')
+  console.log('origin: ', origin)
+  const supabase = await createClient()
+  const { error, data } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${origin}`
+    }
+  })
+
+  if(error) {
+    console.log(error) 
+  } else {
+    return redirect(data.url)
+  }
+}
+
+export async function revalidate() {
+  revalidatePath('/', 'layout')
 }

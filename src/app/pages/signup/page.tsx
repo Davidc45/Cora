@@ -16,8 +16,8 @@
 
 'use client'
 
-import { signup } from "@/app/components/actions";
-import { useRouter, useSearchParams } from "next/navigation";
+import { signInWithGoogle, signup } from "@/app/components/actions";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useFormStatus } from "react-dom";
 import { useEffect, useState } from "react";
@@ -124,6 +124,8 @@ export default function Signup() {
             Signup
           </div>
         </>}
+
+        <div onClick={signInWithGoogle} className="signup-with-google">Sign up with google</div>
 
 
         <footer>Already have an account? <Link href='/pages/login'>Log in here</Link></footer>

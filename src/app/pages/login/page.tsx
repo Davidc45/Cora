@@ -8,7 +8,7 @@
 
 'use client'
 
-import { login } from "@/app/components/actions";
+import { login, signInWithGoogle } from "@/app/components/actions";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation"
 import { useState } from "react";
@@ -34,19 +34,28 @@ export default function Login() {
 
   return (
     <form className="login-container">
-      <h2>Login</h2>
+      <h2>Sign In</h2>
       <label htmlFor="email">Email</label>
       <input id="email" name="email" type="email" required />
 
       <label htmlFor="password">Password</label>
-      <input id="password" name="password" 
-        type={ showPass ? 'text' : 'password' } required />
-      <div className="toggle-pass" onClick={togglePass}>
-        { showPass ? <>hide</> : <>show</> } password
+      <div className="password-block">
+        <input id="password" name="password" className="password"
+          type={ showPass ? 'text' : 'password' } required 
+        />
+        <div onClick={togglePass} className="icon">
+          { showPass ? 
+            <img src='/assets/hide.png' alt="hide" className="view-icon"/> :
+            <img src='/assets/view.png' alt="view" className="view-icon"/> 
+          }
+        </div>
       </div>
+
       <Link href='/pages/forgotpass'>Forgot Password?</Link>
 
-      <button formAction={login} className="login-button">Login</button>
+      <button formAction={login} type="submit" className="login-button">Login</button>
+      <div className="or">or</div>
+      <div onClick={signInWithGoogle} className="google-login">Sign in with Google</div>
       <footer>Don't have an account? <Link href='/pages/signup'>Sign-up here</Link></footer>
       { errMessage ? <Err message={errMessage}/> : <></>}
     </form>

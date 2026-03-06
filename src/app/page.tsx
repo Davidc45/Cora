@@ -1,4 +1,10 @@
-import { createClient } from "@/lib/supabase/server"
+'use client'
+
+import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { revalidate } from "./components/actions";
 
 /**
  * Home page: list of existing reports/complaints.
@@ -10,24 +16,34 @@ import { createClient } from "@/lib/supabase/server"
  * - Simple list of report title + description.
  * - Placeholder element rendered when an image is not yet available.
  */
-export default async function Home() {
-  const supabase = await createClient();
-  const { data: reports } = await supabase.from('reports').select();
+export default function Home() {
+  const params = useSearchParams()
+  const code = params.get('code') ?? ""
+  const supabase = createClient()
+  const [test, setTest] = useState('')
 
-  const formattedReports = reports?.map((report) => {
-    return (
-      <div key={report.report_id} className="report">
-        <h3>{report.report_title}</h3>
-        <p>{report.report_description}</p>
-        { report.report_image ? <img /> : <div className="no-image">Empty</div>}
-      </div>
-    )
+  supabase.auth.onAuthStateChange((event, session) => {
+    if(event === 'SIGNED_IN') {
+      console.log('SIGNED_IN', session)
+      revalidate()
+    }
   })
 
   return (
     <div className="home-container">
-      <h1>Reports and complaints</h1>
-      { formattedReports?.length == 0 ? <div>no reports yet</div> : formattedReports }
+      <h2 className="home-message">
+        Help keep everyone in your community alert and informed
+        </h2>
+        <h1 className="home-title">CORA</h1>
+        <p className="home-mission-statement">
+          Mission statement is in progress.
+        </p>
+      <div className="home-buttons">
+        <Link href='/pages/explore' className="home-button">Explore</Link>
+        <Link href='/pages/signup' className="home-button">Sign Up</Link>
+      </div>
+      <input type="hidden" name="code" value={code} />
+      <div>{test}</div>
     </div>
   )
 }

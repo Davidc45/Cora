@@ -4,6 +4,7 @@ import NavBar from "./components/navbar";
 import RegisterSw from "./components/register-sw";
 import './styles/globals.css';
 import './styles/forms.css';
+import './styles/home.css'
 import { createClient } from "@/lib/supabase/server";
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
