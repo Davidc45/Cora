@@ -1,23 +1,52 @@
+'use client';
+
+import { useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
 import { createReport } from '@/app/components/report-actions';
+import PhoneVerificationModal from '@/app/components/phone-verification-modal';
 
 /**
  * Upload form for creating a new report.
  *
  * Props:
- * - `user`: Supabase user or `null` (passed from the server page). At the
- *   moment this component does not render differently based on auth state,
- *   but the server action enforces authentication before inserting a report.
+ * - `user`: Supabase user or `null` (passed from the server page).
+ * - `phoneVerified`: whether the user has verified their phone (so we can show the modal on load if not).
  *
  * Form:
  * - Posts to the `createReport` server action.
- * - Captures title, category, description, and an optional image file
- *   (image handling can be wired up later).
+ * - Shows the phone verification modal as soon as the user lands on this page if they are
+ *   logged in but not phone-verified (so they don't fill the form and then get blocked on submit).
+ * - Also shows the modal when redirected with ?err= after a failed submit.
  */
-export default function UploadForm({ user }: { user: User | null }) {
+export default function UploadForm({
+  user,
+  phoneVerified = true,
+}: {
+  user: User | null;
+  phoneVerified?: boolean;
+}) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const err = searchParams.get('err');
+  const [dismissedHere, setDismissedHere] = useState(false);
+  const showPhoneModal =
+    !!err || ((!!user && !phoneVerified) && !dismissedHere);
+
+  const handleCloseModal = () => {
+    setDismissedHere(true);
+    router.replace('/pages/upload');
+  };
+
   return (
-    <form action={createReport} className="upload-form">
-      <h1>Upload</h1>
+    <>
+      <PhoneVerificationModal
+        open={showPhoneModal}
+        onVerifyLater={handleCloseModal}
+        onVerifyNow={() => router.push('/pages/verify-phone')}
+      />
+      <form action={createReport} className="upload-form">
+        <h1>Upload</h1>
 
       <label htmlFor="title">Title</label>
       <input id="title" name="title" type="text" required />
@@ -32,6 +61,7 @@ export default function UploadForm({ user }: { user: User | null }) {
       <input id="image" name="image" type="file" accept="image/png, image/jpeg" />
 
       <button type="submit">Submit report</button>
-    </form>
+      </form>
+    </>
   );
 }

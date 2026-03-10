@@ -3,7 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 const publicRoutes = ['/pages/login', '/pages/signup']
 import { NextResponse, type NextRequest } from 'next/server'
 
-const protectedRoutes = ['/pages/account', '/pages/upload']
+const protectedRoutes = ['/pages/account', '/pages/upload', '/pages/verify-phone']
 
 /**
  * Middleware-style helper for keeping Supabase auth sessions in sync with Next.
@@ -55,12 +55,11 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(new URL('/pages/forgotpass?err=Open page through the link sent to your email.', request.url))
   }
 
-  // commented out for now because when signing up, the user is redirected to the
-  // home page with a code, and since the home page has a code but isn't the resetpass
-  // page, it you get sent to the redirect page after signing up, which is undesired
-  // If Supabase sent us a recovery link to the wrong path (e.g. '/?code=...'),
-  // normalize it to the dedicated reset password page.
-  if (code && pathname !== '/pages/resetpass' && pathname !== '/') {
+  // If Supabase sent us a recovery link to the wrong path (e.g. '/some/page?code=...'),
+  // normalize it to the dedicated reset password page. Do NOT redirect when the path
+  // is /auth/callback (OAuth sign-in) or / (email sign-up can land here with a code).
+  const isOAuthOrRoot = pathname === '/auth/callback' || pathname === '/'
+  if (code && pathname !== '/pages/resetpass' && !isOAuthOrRoot) {
     const redirectUrl = new URL('/pages/resetpass', request.url)
     redirectUrl.searchParams.set('code', code)
     return NextResponse.redirect(redirectUrl)

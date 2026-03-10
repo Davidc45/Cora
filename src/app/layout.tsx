@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import NavBar from "./components/navbar";
+import PhoneVerificationWrapper from "./components/phone-verification-wrapper";
 import RegisterSw from "./components/register-sw";
 import './styles/globals.css';
 import './styles/forms.css';
@@ -126,9 +127,19 @@ export default async function RootLayout({
 }>) {
 
   const supabase = await createClient();
-  const { 
+  const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  let phoneVerified = false;
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('phone_verified')
+      .eq('id', user.id)
+      .maybeSingle();
+    phoneVerified = profile?.phone_verified === true;
+  }
 
   return (
     <html lang="en">
@@ -137,6 +148,7 @@ export default async function RootLayout({
       >
         <RegisterSw />
         <NavBar user={user} />
+        <PhoneVerificationWrapper user={user} phoneVerified={phoneVerified} />
         {children}
         <Analytics />
         <SpeedInsights />

@@ -9,7 +9,6 @@
  * - Use redirects for control flow (success + error messages via query params).
  * - Revalidate the root layout so nav/session state updates immediately.
  *
- * Note: redirects throw internally in Next.js; code after `redirect()` does not run.
  */
 
 import { revalidatePath } from 'next/cache'
@@ -235,13 +234,12 @@ export async function resetpass(formData: FormData) {
 
 export async function signInWithGoogle() {
   const origin = (await headers()).get('origin')
-  console.log('origin: ', origin)
   const supabase = await createClient()
   const { error, data } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${origin}`
-    }
+      redirectTo: `${origin}/auth/callback`,
+    },
   })
 
   if(error) {

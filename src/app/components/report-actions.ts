@@ -45,6 +45,20 @@ export async function createReport(formData: FormData) {
     redirect('/pages/login');
   }
 
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('phone_verified, phone')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (!profile?.phone_verified || profile.phone == null) {
+    redirect(
+      `/pages/upload?err=${encodeURIComponent(
+        'You must verify your phone number before you can create a report.',
+      )}`,
+    );
+  }
+
   const title = trim(formData.get('title'));
   const description = trim(formData.get('description'));
 

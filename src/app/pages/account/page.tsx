@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import NotificationToggle from '@/app/components/notification-toggle';
+import VerifiedToast from '@/app/components/verified-toast';
 
 /**
  * Account page (authenticated).
@@ -28,6 +29,7 @@ export default async function Account() {
 
   return (
     <div className="account-container">
+      <VerifiedToast />
       <h1>Welcome, {username}!!!</h1>
       <NotificationToggle />
     </div>
