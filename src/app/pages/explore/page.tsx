@@ -1,23 +1,32 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from '@/lib/supabase/server';
+import { getReportCommentCounts } from '@/app/components/report-actions';
+import ExploreListClient from './explore-list-client';
+
+export const dynamic = 'force-dynamic';
 
 export default async function Explore() {
-    const supabase = await createClient();
-    const { data: reports } = await supabase.from('reports').select();
-  
-    const formattedReports = reports?.map((report) => {
-      return (
-        <div key={report.report_id} className="report">
-          <h3>{report.report_title}</h3>
-          <p>{report.report_description}</p>
-          { report.report_image ? <img /> : <div className="no-image">Empty</div>}
-        </div>
-      )
-    })
-  
-    return (
-      <div>
-        <h1>Reports and complaints</h1>
-        { formattedReports?.length == 0 ? <div>no reports yet</div> : formattedReports }
-      </div>
-    )
+  const supabase = await createClient();
+  const { data: reports } = await supabase
+    .from('reports_with_meta')
+    .select('report_id, report_title, report_description, report_image, score, upvotes, downvotes')
+    .order('report_id', { ascending: false });
+
+  const reportIds = reports?.map((r) => r.report_id) ?? [];
+  const commentCounts = reportIds.length
+    ? await getReportCommentCounts(reportIds)
+    : {};
+
+  return (
+    <div className="explore-page">
+      <h1>Reports and complaints</h1>
+      {!reports?.length ? (
+        <div>No reports yet</div>
+      ) : (
+        <ExploreListClient
+          reports={reports}
+          commentCounts={commentCounts}
+        />
+      )}
+    </div>
+  );
 }
