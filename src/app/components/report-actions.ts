@@ -61,6 +61,7 @@ export async function createReport(formData: FormData) {
 
   const title = trim(formData.get('title'));
   const description = trim(formData.get('description'));
+  const image: File = formData.get('image') as File;
 
   if (!title || !description) {
     redirect(
@@ -75,13 +76,39 @@ export async function createReport(formData: FormData) {
     .insert({
       report_title: title,
       report_description: description,
+      report_image: image.name,
       // Minimal required fields for reports table / RLS
       category_id: 1, // e.g. 'Safety' from current seed data
       created_by: user.id,
       location: 'POINT(0 0)', // placeholder location; replace with real coordinates later
     })
-    .select('report_title')
+    .select('*')
     .single();
+
+  if(data) {
+    const imageFormData = new FormData();
+    imageFormData.append('rid', data.report_id);
+    imageFormData.append('image', image)
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_HOME_PAGE}/api/cloudflare`, {
+        method: 'POST', 
+        body: imageFormData,
+      })
+      
+      const recv = await response.json();
+      if(!recv.success) {
+        console.log('failed to upload image')
+        // redirect(`/pages/upload?err=${recv.message}`)
+      } 
+      console.log('success: ', recv.message)
+      // redirect('/')
+
+    } catch(err) {
+      console.log('error: ', err)
+      // redirect(`/pages/upload?err=${err}`)
+    }
+  }
 
   if (error || !data) {
     console.error('Error creating report', error);
