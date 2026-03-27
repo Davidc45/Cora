@@ -15,6 +15,8 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
+import { deleteImage } from './cfhelpers'
+import { NextRequest } from 'next/server'
 
 /** Minimum username length enforced before attempting sign-up. */
 const USERNAME_MIN_LENGTH = 3
@@ -252,3 +254,57 @@ export async function signInWithGoogle() {
 export async function revalidate() {
   revalidatePath('/', 'layout')
 }
+
+
+/*-------------------------------
+Delete Report
+  must be used in a form 
+
+  Input
+  - form must have 'rid' value containing a valid report ID
+  
+  Output
+  - deletes image from Cloudflare, then removes entry from Supabase
+-------------------------------*/
+export async function deleteReport(formData: FormData) {
+  const rid: any = formData.get('rid')
+  const supabase = await createClient();
+
+  const { data: report} = await supabase 
+    .from('reports')
+    .select('*')
+    .eq('report_id', rid)
+    .single()
+
+  if(!report) {
+    console.log('error: report has no value')
+    return
+  }
+
+  // delete the image from cloudflare
+  const cfRes = await deleteImage(`${rid}-${report.report_image}`);
+
+  if(cfRes === 200) {
+    console.log('cloudflare: image deleted successfully')
+  } else  {
+    console.log('cloudflare: failed to delete image')
+    return 
+  }
+
+  // delete the entry from supabase
+  const sbRes = await supabase
+    .from('reports')
+    .delete()
+    .eq('report_id', report.report_id)
+
+  if(sbRes.status === 204) {
+    console.log('supabase: successfully deleted')
+  } else {
+    console.log('supabase: failed to delete')
+    return
+  }
+
+  console.log('deleted successfully')
+  revalidate()
+}
+

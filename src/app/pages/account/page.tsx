@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import NotificationToggle from '@/app/components/notification-toggle';
 import VerifiedToast from '@/app/components/verified-toast';
+import { Reports } from '@/app/components/client-components';
+import { getImages } from '@/app/components/cfhelpers';
 
 /**
  * Account page (authenticated).
@@ -11,6 +13,7 @@ import VerifiedToast from '@/app/components/verified-toast';
  * - Embeds the `NotificationToggle` to manage browser push notifications.
  */
 export default async function Account() {
+  const images = await getImages(null);
   const supabase = await createClient();
   const { data: { user }, } = await supabase.auth.getUser();
   if (!user) redirect('/pages/login');
@@ -20,6 +23,11 @@ export default async function Account() {
     .select('username')
     .eq('id', user.id)
     .single();
+
+  const { data: report } = await supabase
+    .from('reports')
+    .select('*')
+    .eq('created_by', user?.id)
 
   const username =
     profile?.username ??
@@ -32,6 +40,10 @@ export default async function Account() {
       <VerifiedToast />
       <h1>Welcome, {username}!!!</h1>
       <NotificationToggle />
+      <div>
+        <h3>Your Reports</h3>
+        <Reports reports={report} images={images} inAccount={true}/>
+      </div>
     </div>
   );
 }

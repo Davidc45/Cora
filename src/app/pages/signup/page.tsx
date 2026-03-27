@@ -21,7 +21,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useFormStatus } from "react-dom";
 import { useEffect, useState } from "react";
-import Err from "@/app/components/err";
+import { Err } from "@/app/components/client-components";
 
 
 /**

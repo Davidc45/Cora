@@ -1,6 +1,9 @@
 import { NextResponse, NextRequest } from "next/server";
-import { GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
+const IMAGE_DATABASE = 'cora-image-database';
+const PFP_DATABASE = 'pfp-database';
 
 const r2 = new S3Client({
   region: 'auto',
@@ -13,6 +16,7 @@ const r2 = new S3Client({
 
 /*-------------------
 POST  
+** helper function takes care of all the fetch stuff, check components > cfhelpers.tsx
   how to use: 
     - call using fetch('homepage/api/cloudflare', { method: POST, body: formData })
     - where formData is of type FormData
@@ -51,7 +55,7 @@ export async function POST(req: NextRequest) {
   const bytes = await userImage.arrayBuffer()
   const buffer = Buffer.from(bytes)
   const putObjectCommand = new PutObjectCommand({
-    Bucket: 'cora-image-database',
+    Bucket: IMAGE_DATABASE,
     Key: RID + '-' + userImage.name,
     Body: buffer
   })
@@ -74,19 +78,34 @@ export async function POST(req: NextRequest) {
 
 /*-------------------
 GET
+** helper function takes care of all the fetch stuff, check components > cfhelpers.tsx
   how to use: 
-    call using fetch('homepage/api/cloudflare')
+    NO ARGUMNENT: call using fetch('homepage/api/cloudflare') 
+    ARGUMENT: fetch('homepage/api/cloudflare')
   what it does: 
-    returns a set of key: value pairs 
+    IF CALLED WITH NO ARGUMENT: returns a set of key: value pairs 
     - key: the <image-name>-<report-id>
     - value: image url, used in Image component (<Image src={url} .../>)
+    IF CALLED WITH ARGUMENT: returns the one, requested image
 ---------------------*/
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+/*-------------------
+if an image is passed as an argument
+- retrieve the one, requested image
+---------------------*/
+  if(req) {
+
+  }
+
+/*-------------------
+default response
+- return all images in the cora-image-database
+---------------------*/
   const images = new Map<string, string>();
   try {
     const listCommand = new ListObjectsV2Command({
-      Bucket: 'cora-image-database'
+      Bucket: IMAGE_DATABASE
     })
 
     const list = await r2.send(listCommand);
@@ -94,25 +113,14 @@ export async function GET() {
     for(let i = 0; i < objects.length; i++) {
       const key = objects[i].Key;
       const command = new GetObjectCommand({
-        Bucket: 'cora-image-database',
+        Bucket: IMAGE_DATABASE,
         Key: key
       });
       const url = await getSignedUrl(r2, command);
       images.set(key!, url)
     }
-    
-    // this was working before, now it doesn't, idek what's going on anymore
-    // objects.map(async (obj) => {
-    //   const command = new GetObjectCommand({
-    //     Bucket: 'cora-image-database',
-    //     Key: obj.Key!
-    //   })
-    //   const url = await getSignedUrl(r2, command);
-    //   images.set(`${obj.Key!}`, `${url}`)
-    // })
 
     const serializedImages = Object.fromEntries(images)
-    console.log('serialized: ', serializedImages)
     return NextResponse.json({
       success: true, 
       status: 200, 
@@ -124,5 +132,50 @@ export async function GET() {
         status: 500,
         images: []
       })
+  }
+}
+
+/*-------------------
+DELETE
+** helper function takes care of all the fetch stuff, check components > cfhelpers.tsx
+  how to use: 
+    call using fetch('homepage/api/cloudflare', { method: 'DELETE', body: image-name})
+    where image-name is a STRING containing the name of the image you want to delete
+  what it does: 
+    deletes that image from 'cora-image-database' and returns a JSON package with status info
+    json.success to see if it worked, !json.success to see if it failed
+---------------------*/
+
+export async function DELETE(req: NextRequest) {
+  const formData = await req.formData();
+  const image = formData.get('image') as string;
+
+  if(!image) {
+    return NextResponse.json({
+      success: false,
+      status: 500,
+      message: 'error getting image file'
+    })
+  }
+
+  try {
+    const res = await r2.send(
+      new DeleteObjectCommand({
+        Bucket: IMAGE_DATABASE,
+        Key: image
+      }),
+    );
+    console.log('res: ', res)
+    return NextResponse.json({
+      success: true,
+      status: 200,
+      message: 'deleted successfully'
+    })
+  } catch(err) {
+    return NextResponse.json({
+      success: false,
+      status: 500,
+      message: 'error deleting file'
+    })
   }
 }
