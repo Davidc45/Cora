@@ -8,6 +8,7 @@ type ReportRow = {
   report_title: string | null;
   report_description: string | null;
   report_image: string | null;
+  status: 'Unconfirmed' | 'Community-Supported' | 'Disputed' | null;
   score: number | null;
   upvotes: number | null;
   downvotes: number | null;
@@ -31,7 +32,14 @@ export default function ExploreListClient({
             className="report-card-link"
             prefetch={false}
           >
-            <h3>{report.report_title}</h3>
+            <div className="report-card-header">
+              <h3>{report.report_title}</h3>
+              <span
+                className={`report-status-badge report-status-badge--${(report.status ?? 'Unconfirmed').toLowerCase()}`}
+              >
+                {report.status ?? 'Unconfirmed'}
+              </span>
+            </div>
             <p>{report.report_description ?? ''}</p>
             {report.report_image ? (
               <img src={report.report_image} alt="" className="report-image" />
