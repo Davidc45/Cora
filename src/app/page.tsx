@@ -45,5 +45,5 @@ export default function Home() {
       <input type="hidden" name="code" value={code} />
       <div>{test}</div>
     </div>
-  )
+  );
 }
