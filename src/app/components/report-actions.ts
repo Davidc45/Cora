@@ -62,6 +62,8 @@ export async function createReport(formData: FormData) {
   const title = trim(formData.get('title'));
   const description = trim(formData.get('description'));
   const image: File = formData.get('image') as File;
+  const category = trim(formData.get('category'));
+  // const address = trim(formData.get('address'));
 
   if (!title || !description) {
     redirect(

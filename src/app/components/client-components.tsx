@@ -1,8 +1,6 @@
 'use client'
 
-import { report } from "process"
 import { useState } from "react"
-import { deleteImage, getImages } from "./cfhelpers"
 import Image from "next/image"
 import { deleteReport } from "./actions"
 
@@ -90,4 +88,62 @@ export function Reports({ reports, images, inAccount }: any | null) {
       </div>
     );
   }
+}
+
+/*---------------------
+<Dropdown />
+- a provides a dropdown menu for a form
+
+Input
+- array of options as strings
+- the function to update the state
+- category of type string to show the current category
+---------------------*/
+export function Dropdown({ options, update, category }: {
+  options: string[], 
+  update: Function,
+  category: string
+}) {
+  const [showOptions, setShowOptions] = useState(false);
+
+  const toggle = () => {
+    if(showOptions) setShowOptions(false)
+    else setShowOptions(true)
+  }
+
+  const selectOption = (category: string) => {
+    update(category);
+    setShowOptions(false);
+  }
+
+  const categories = options.map((option) => {
+    return (
+      <div 
+        key={option} 
+        onClick={() => selectOption(option)}
+        className="dropdown-menu-item"
+      >
+        {option}
+      </div>
+    )
+  })
+  
+  return (
+    <div className="category-container">
+      <div onClick={toggle} className="upload-input">
+        {
+          category.length <= 0 ? 
+          <div className="pre-select">Select a category.</div> :
+          <div>{category}</div>
+        } 
+      </div>
+      {
+        showOptions ? 
+        <div className="dropdown-menu-container">
+          {categories}
+        </div> : <></>
+      }
+    </div>
+  )
+
 }
