@@ -15,9 +15,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
-import { deleteImage } from './cfhelpers'
-import { NextRequest } from 'next/server'
-import { create } from 'domain'
+import { deleteImage, postImage } from './cfhelpers'
 
 /** Minimum username length enforced before attempting sign-up. */
 const USERNAME_MIN_LENGTH = 3
@@ -118,6 +116,7 @@ updateProfile()
 - update the user's information
 */
 export async function updateProfile(formData: FormData) {
+  const pfpDatabase = 'user-avatars';
   const supabase = await createClient();
   console.log('updating profile...')
   const getImage: File = formData.get('image') as File;
@@ -126,14 +125,23 @@ export async function updateProfile(formData: FormData) {
   const phoneNum = trim(formData.get('phone'));
   const uid = trim(formData.get('uid'));
 
+  console.log('uploading image to cloudflare...')
   const image = getImage.name != 'undefined' ? `${username}-${getImage.name}` : null;
+  const uploadImageStatus = await postImage({image: getImage, database: pfpDatabase, rid: null, username: username});
 
+  if(uploadImageStatus.status === 500) {
+    redirect(`/pages/account?err=Cloudflare could not upload image, status: ${uploadImageStatus}`)
+  } 
+
+  const url = uploadImageStatus?.url;
+
+  console.log('uploading data to supabase...')
   const { error } = await supabase
     .from('profiles')
     .update({
       full_name: name,
       username: username,
-      avatar_url: image,
+      avatar_url: url,
       phone: phoneNum
     })
     .eq('id', uid)
@@ -141,9 +149,9 @@ export async function updateProfile(formData: FormData) {
 
   if(error) {
     redirect(`/pages/account?err=${error.message}`)
-  } else {
-    redirect('/pages/account?success=Account updated successfully')
-  }
+  } 
+    
+  redirect('/pages/account?success=Account updated successfully')
 }
 
 /**
@@ -316,7 +324,7 @@ export async function deleteReport(formData: FormData) {
   }
 
   // delete the image from cloudflare
-  const cfRes = await deleteImage(`${rid}-${report.report_image}`);
+  const cfRes = await deleteImage({image: `${rid}-${report.report_image}`, database: 'cora-image-database'});
 
   if(cfRes === 200) {
     console.log('cloudflare: image deleted successfully')

@@ -15,7 +15,9 @@
     width: 400px;
     margin: 10px;
     background-color: rgb(255, 255, 255);
+    color: black;
     gap: 20px;
+    text-decoration: none;
 }
 
 .report-header {

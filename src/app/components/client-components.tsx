@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import { deleteReport, updateProfile } from "./actions"
+import Link from "next/link"
+import { getAvatar } from "./cfhelpers"
 
 /**
  * Small dismissible error banner component.
@@ -47,7 +49,7 @@ export function Reports({ reports, images, inAccount }: any | null) {
     const formattedReports = reports?.map((report: any) => {
       const url = images[report.report_id + '-' + report.report_image];
       return (
-        <div key={report.report_id} className="report">
+        <Link href={`/pages/user-report?report=${report.report_id}`} key={report.report_id} className="report">
           <div className="report-header">
             <h2 className="report-category">{report.category}</h2>
             <div className={report.status}>{report.status}</div>
@@ -58,13 +60,13 @@ export function Reports({ reports, images, inAccount }: any | null) {
           {
             inAccount ? 
             <div>
-              <Image 
+              {/* <Image 
                 src={url}
                 alt="usr-img"
                 width={100}
                 height={100}
                 className="report-image"
-              /> 
+              />  */}
               <form>
                 <input type="hidden" name="rid" value={report.report_id}/>
                 <button formAction={(e) => {
@@ -89,7 +91,7 @@ export function Reports({ reports, images, inAccount }: any | null) {
               </div>
             </div>
           }
-        </div>
+        </Link>
       )
     });
     return (
@@ -162,25 +164,44 @@ export function Dropdown({ options, update, category }: {
 <UpdateAccount />
 - update your username, profile picture, and password
 */
-export function UpdateAccount(profile: any) {
-  const user = profile.profile;
+export function UpdateAccount({user}: {user: any}) {
+
+  const Avatar = () => {
+    if(user.avatar_url) {
+      console.log('image:', user.avatar_url)
+      return (
+        <Image
+          src={user.avatar_url}
+          alt="usr-pfp"
+          height={100}
+          width={100}
+          className="pfp"
+        />
+      )
+    } else {
+      console.log('img', user.avatar_url)
+      return (
+        <img
+          src='assests/user.png'
+          alt="usr-pfp"
+          className="pfp"
+        />
+      )
+    }
+  }
+
   const [editing, setEditing] = useState(false);
   const [username, setUsername] = useState(user.username);
   const [name, setName] = useState(user.full_name);
   // const [email, setEmail] = useState(user.email);
   const [phoneNum, setPhoneNum] = useState(user.phone);
-  const [pfp, setPfp] = useState<string | null>(user.avatar_url)
+  const [pfp, setPfp] = useState(user.avatar_url)
 
-  console.log('type of url: ', user)
+  console.log('pfp:', pfp)
 
   const toggleEditing = () => {
     if(editing) { setEditing(false) }
     else { setEditing(true) }
-  }
-
-  const deletePhoto = () => {
-    URL.revokeObjectURL(`${pfp}`)
-    setPfp('/assets/user.png');
   }
 
   const deleteChanges = () => {
@@ -189,7 +210,7 @@ export function UpdateAccount(profile: any) {
       setUsername(user.username)
       setName(user.name)
       setPhoneNum(user.phoneNum)
-      deletePhoto();
+      setPfp(user.avatar_url)
       toggleEditing();
     }
   }
@@ -203,37 +224,25 @@ export function UpdateAccount(profile: any) {
     setPfp(url);
   }
 
-  if(!pfp) {
-    deletePhoto();
-  }
-
-  useEffect(() => {
-    console.log('pfp changed: ', pfp)
-    return () => {
-      if(pfp) {
-        URL.revokeObjectURL(pfp)
-      }
-    };
-  }, [pfp])
-
   return (
     <form className="upload-container">
       <h3>Update Profile</h3>
 
       <div className="update-pfp-container">
-        <Image 
-          src={`${pfp}`}
-          alt="pfp"
-          width={100}
-          height={100}
-          className="pfp"
-        />
         {
           editing ? 
           <div className="image-options">
+            {/* <img 
+              src={pfp}
+              alt="usrpfp"
+              width={100}
+              height={100}
+              className="pfp"
+            /> */}
             <input id="image" name="image" type="file" accept="image/png, image/jpeg" onChange={updatePfp} /> 
-            <div onClick={deletePhoto}>delete photo</div>
-          </div> : <></>
+            <div>delete photo</div>
+          </div> : 
+          <Avatar />
         }
       </div>
 

@@ -1,9 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
-import { DeleteObjectCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, ListObjectsCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-
-const IMAGE_DATABASE = 'cora-image-database';
-const PFP_DATABASE = 'pfp-database';
+import { error } from "console";
 
 const r2 = new S3Client({
   region: 'auto',
@@ -42,29 +40,45 @@ export async function POST(req: NextRequest) {
     })
   }
 
+  const database = formData.get('database') as string;
   const userImage: File = formData.get('image') as File
+  const username = formData.get('username') as string;
   const RID = formData.get('rid')
-  if(!userImage || !RID) {
+  let key = '';
+
+  if(userImage.name === 'undefined' || !userImage) {
     return NextResponse.json({
       success: false,
-      message: 'error getting user image or RID',
+      message: 'undefined image',
       status: 500,
     })
+  }
+
+  if(database === 'cora-image-database') {
+    key = RID + '-' + userImage.name;
+  } else {
+    key = username + '-' + userImage.name;
   }
 
   const bytes = await userImage.arrayBuffer()
   const buffer = Buffer.from(bytes)
   const putObjectCommand = new PutObjectCommand({
-    Bucket: IMAGE_DATABASE,
-    Key: RID + '-' + userImage.name,
+    Bucket: database,
+    Key: key,
     Body: buffer
   })
 
   try {
+    const databaseImage = new GetObjectCommand({
+      Bucket: database,
+      Key: key
+    })
+    const url = await getSignedUrl(r2, databaseImage);
     const res = await r2.send(putObjectCommand)
     return NextResponse.json({
       success: true,
       message: res,
+      url: url,
       status: 200
     })
   } catch(err) {
@@ -94,44 +108,85 @@ export async function GET(req: NextRequest) {
 if an image is passed as an argument
 - retrieve the one, requested image
 ---------------------*/
-  if(req) {
+try {
+  const formData = await req.formData();
+  if(formData) {
+    const database = formData.get('database') as string;
+    const image: File = formData.get('image') as File;
 
+    if(!database || !image) {
+      return NextResponse.json({
+        success: false, 
+        message: 'error gettting info from form',
+        status: 500,
+      })
+    }
+    try {
+      const databaseImage = new GetObjectCommand({
+        Bucket: database,
+        Key: image.name
+      })
+      const url = await getSignedUrl(r2, databaseImage);
+      if(url) {
+        return NextResponse.json({
+          success: true,
+          message: 'successfully got image',
+          image: url,
+          status: 200,
+        })
+      } else {
+        return NextResponse.json({
+          success: false,
+          message: 'url did not properly load',
+          status: 500,
+        })
+      }
+    } catch(err) {
+      return NextResponse.json({
+        success: false,
+        message: `error: ${err}`,
+        status: 500,
+      })
+    }
   }
-
+} 
 /*-------------------
 default response
 - return all images in the cora-image-database
 ---------------------*/
-  const images = new Map<string, string>();
-  try {
-    const listCommand = new ListObjectsV2Command({
-      Bucket: IMAGE_DATABASE
-    })
-
-    const list = await r2.send(listCommand);
-    const objects  = list.Contents ?? [];
-    for(let i = 0; i < objects.length; i++) {
-      const key = objects[i].Key;
-      const command = new GetObjectCommand({
-        Bucket: IMAGE_DATABASE,
-        Key: key
-      });
-      const url = await getSignedUrl(r2, command);
-      images.set(key!, url)
-    }
-
-    const serializedImages = Object.fromEntries(images)
-    return NextResponse.json({
-      success: true, 
-      status: 200, 
-      images: serializedImages
-    })
-  } catch (err) {
-      return NextResponse.json({
-        success: false,
-        status: 500,
-        images: []
+  catch(err) {
+    const images = new Map<string, string>();
+    const database = 'cora-image-database';
+    try {
+      const listCommand = new ListObjectsV2Command({
+        Bucket: database
       })
+
+      const list = await r2.send(listCommand);
+      const objects  = list.Contents ?? [];
+      for(let i = 0; i < objects.length; i++) {
+        const key = objects[i].Key;
+        const command = new GetObjectCommand({
+          Bucket: database,
+          Key: key
+        });
+        const url = await getSignedUrl(r2, command);
+        images.set(key!, url)
+      }
+
+      const serializedImages = Object.fromEntries(images)
+      return NextResponse.json({
+        success: true, 
+        status: 200, 
+        images: serializedImages
+      })
+    } catch (err) {
+        return NextResponse.json({
+          success: false,
+          status: 500,
+          images: []
+        })
+    }
   }
 }
 
@@ -149,6 +204,7 @@ DELETE
 export async function DELETE(req: NextRequest) {
   const formData = await req.formData();
   const image = formData.get('image') as string;
+  const database = formData.get('database') as string;
 
   if(!image) {
     return NextResponse.json({
@@ -161,7 +217,7 @@ export async function DELETE(req: NextRequest) {
   try {
     const res = await r2.send(
       new DeleteObjectCommand({
-        Bucket: IMAGE_DATABASE,
+        Bucket: database,
         Key: image
       }),
     );

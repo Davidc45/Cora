@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import NotificationToggle from '@/app/components/notification-toggle';
 import VerifiedToast from '@/app/components/verified-toast';
 import { Reports, UpdateAccount } from '@/app/components/client-components';
-import { getImages } from '@/app/components/cfhelpers';
+import { getAvatar, getImages } from '@/app/components/cfhelpers';
 
 /**
  * Account page (authenticated).
@@ -13,7 +13,7 @@ import { getImages } from '@/app/components/cfhelpers';
  * - Embeds the `NotificationToggle` to manage browser push notifications.
  */
 export default async function Account() {
-  const images = await getImages(null);
+  const images = await getImages();
   const supabase = await createClient();
   const { data: { user }, } = await supabase.auth.getUser();
   if (!user) redirect('/pages/login');
@@ -42,7 +42,7 @@ export default async function Account() {
       <NotificationToggle />
       <h3>Your Reports</h3>
       <Reports reports={report} images={images} inAccount={true}/>
-      <UpdateAccount profile={profile}/>
+      <UpdateAccount user={profile} />
     </div>
   );
 }
