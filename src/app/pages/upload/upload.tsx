@@ -7,6 +7,7 @@ import { createReport } from '@/app/components/report-actions';
 import PhoneVerificationModal from '@/app/components/phone-verification-modal';
 import { Dropdown } from '@/app/components/client-components';
 import Link from 'next/link';
+import { AddressForms } from '@/app/components/autocomplete';
 
 /**
  * Upload form for creating a new report.
@@ -73,8 +74,8 @@ export default function UploadForm({
       <label htmlFor="title" className='upload-label'>Title</label>
       <input id="title" name="title" type="text" className='upload-input' maxLength={50} required />
 
-      <label htmlFor='address' className='upload-label'>Address</label>
-      <input id='address' name='address' className='upload-input' />
+      <label className='upload-label'>Address</label>
+      <AddressForms />
 
       <label htmlFor="description" className='upload-label'>Description</label>
       <textarea id="description" name="description" rows={3} className='upload-input' maxLength={400} required />
