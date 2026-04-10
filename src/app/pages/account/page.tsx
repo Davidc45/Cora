@@ -4,7 +4,7 @@ import NotificationToggle from '@/app/components/notification-toggle';
 import VerifiedToast from '@/app/components/verified-toast';
 import { Reports } from '@/app/components/client-components';
 import { UpdateAccount } from './account';
-import { getAvatar, getImages } from '@/app/components/cfhelpers';
+import { getImages } from '@/app/components/cfhelpers';
 
 /**
  * Account page (authenticated).
