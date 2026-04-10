@@ -1,7 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { DeleteObjectCommand, GetObjectCommand, ListObjectsCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { error } from "console";
 
 const r2 = new S3Client({
   region: 'auto',

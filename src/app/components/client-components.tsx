@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { deleteReport, updateProfile } from "./actions"
+import { deleteReport } from "./actions"
 import Link from "next/link"
 
 /**
