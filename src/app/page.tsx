@@ -30,7 +30,7 @@ export default function Home() {
   return (
     <div className="home-container">
       <h2 className="home-message">
-        Help keep everyone in your community alert and informed
+        Help keep everyone in your community alert and informed.
         </h2>
         <h1 className="home-title">CORA</h1>
         <p className="home-mission-statement">
