@@ -2,9 +2,6 @@
 
 import Link from 'next/link';
 import VoteButtons from './vote-buttons';
-import { getImages } from '@/app/components/cfhelpers';
-import { useEffect, useState } from 'react';
-import { getImgProps } from 'next/dist/shared/lib/get-img-props';
 
 type ReportRow = {
   report_id: number;
