@@ -1,0 +1,51 @@
+---
+title: 'Submitting a report to the community'
+description: 'Step-by-step guide to creating a community safety report on Cora. Covers sign-in, phone verification, required fields, and what happens after submit.'
+---
+
+Submitting a report lets you alert your community to safety incidents, suspicious activity, or other concerns. The server requires a **signed-in** user with **`phone_verified`** on their profile; the upload UI guides you if either is missing.
+
+<Warning>
+  **Guests** see a **Sign in** gate on `/pages/upload` (not the phone modal). **Signed-in users without phone verification** see the **Authorize** reminder and must complete **`/pages/verify-phone`** (or dismiss for the session — the form stays hidden until you are verified). **Title**, **description**, and **category** are all **required**; missing values return a validation error on submit.
+</Warning>
+
+## Before you start
+
+- **Account** — create one at `/pages/signup` or via the link on `/pages/login`.
+- **Phone verification** — complete at `/pages/verify-phone` after signing in.
+
+## Submitting your report
+
+<Steps>
+  <Step title="Open Make a Report">
+    Use **Make a Report** in the header (`/pages/upload`). If you are not signed in, choose **Sign in** on the modal (or **Not now** to leave). If you are signed in but not verified, use **Authorize Now** to go to phone verification, or dismiss with **Authorize Later** (you will not see the form until verified).
+  </Step>
+
+  <Step title="Choose a category (required)">
+    Pick one option from the category control. The value is posted as a hidden `category` field — the server rejects submits without it (`Missing fields.`).
+  </Step>
+
+  <Step title="Fill in the title">
+    Up to **50** characters. Required.
+  </Step>
+
+  <Step title="Enter the address">
+    Use the address fields (street, city, state, country) as shown on the form. They are combined server-side into a single address string (map location may still use a placeholder geometry depending on pipeline configuration).
+  </Step>
+
+  <Step title="Write a description">
+    Up to **400** characters. Required.
+  </Step>
+
+  <Step title="Attach a photo (optional)">
+    **PNG** or **JPEG** only. The UI warns about roughly **4 MB** maximum so the request stays within typical serverless body limits.
+  </Step>
+
+  <Step title="Submit">
+    Click **Submit report**. On success, `createReport` redirects you to the **home page** (`/`). On validation or permission errors, you may stay on upload with `?report_err=` or `?err=` query parameters explaining the issue.
+  </Step>
+</Steps>
+
+<Tip>
+  The most useful reports include a specific location, a clear timeline, and a photo when it is safe to take one. Vague reports are harder for the community to verify or act on.
+</Tip>

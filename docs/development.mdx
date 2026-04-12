@@ -1,94 +1,76 @@
 ---
-title: 'Development'
-description: 'Preview changes locally to update your docs'
+title: "Development"
+description: "Run the Cora Next.js app from the repository root, and preview this Mintlify documentation site from the docs/ folder."
 ---
 
+## Cora web application (Next.js)
+
+The product UI is a **Next.js 16** app at the **repository root** (not inside `docs/`).
+
 <Info>
-  **Prerequisites**:
-  - Node.js version 19 or higher
-  - A docs repository with a `docs.json` file
+  **Prerequisites**: Node.js **20+** (matches `package.json` engines if set), npm or pnpm, and a Supabase project for auth and data.
 </Info>
 
-Follow these steps to install and run Mintlify on your operating system.
+<Steps>
+  <Step title="Install dependencies">
+
+```bash
+npm install
+```
+
+  </Step>
+  <Step title="Configure environment variables">
+    Create **`.env.local`** in the repo root (see the root `README.md` for the minimum set). Typical keys include:
+
+    - `NEXT_PUBLIC_SUPABASE_URL` — Supabase project URL  
+    - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — anon / publishable key  
+    - `NEXT_PUBLIC_HOME_PAGE` — full origin used by server actions that call internal APIs (e.g. `http://localhost:3000` in dev)  
+    - `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` — interactive map  
+    - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` — login / signup when enabled  
+    - R2 / S3 variables for media uploads (`S3_ENDPOINT`, `S3_KEY_ID`, `S3_SECRET_KEY`) when using the bundled upload routes  
+
+    Never commit `.env.local` to git.
+  </Step>
+  <Step title="Start the dev server">
+
+```bash
+npm run dev
+```
+
+    Open [http://localhost:3000](http://localhost:3000). Auth and middleware use the Supabase SSR client under `src/lib/supabase/`.
+  </Step>
+</Steps>
+
+## Preview this documentation site
+
+These pages are built with **Mintlify**. Configuration and branding for the docs **only** live in [`docs/docs.json`](https://github.com/Davidc45/Cora/blob/main/docs/docs.json) (colors, fonts, `name`, `description`, navigation).
 
 <Steps>
-<Step title="Install the Mintlify CLI">
+  <Step title="Install the Mintlify CLI">
 
 ```bash
 npm i -g mint
 ```
-</Step>
 
-<Step title="Preview locally">
-
-Navigate to your docs directory where your `docs.json` file is located, and run the following command:
+  </Step>
+  <Step title="Run from the docs directory">
 
 ```bash
+cd docs
 mint dev
 ```
 
-A local preview of your documentation will be available at `http://localhost:3000`.
-
-</Step>
+    By default the preview listens on port **3000**. If the Cora app is already using 3000, use e.g. `mint dev --port 3333`.
+  </Step>
 </Steps>
 
-## Custom ports
-
-By default, Mintlify uses port 3000. You can customize the port Mintlify runs on by using the `--port` flag. For example, to run Mintlify on port 3333, use this command:
+### Validate links (optional)
 
 ```bash
-mint dev --port 3333
-```
-
-If you attempt to run Mintlify on a port that's already in use, it will use the next available port:
-
-```md
-Port 3000 is already in use. Trying 3001 instead.
-```
-
-## Mintlify versions
-
-Please note that each CLI release is associated with a specific version of Mintlify. If your local preview does not align with the production version, please update the CLI:
-
-```bash
-npm mint update
-```
-
-## Validating links
-
-The CLI can assist with validating links in your documentation. To identify any broken links, use the following command:
-
-```bash
+cd docs
 mint broken-links
 ```
 
-## Deployment
+### Mintlify troubleshooting
 
-If the deployment is successful, you should see the following:
-
-<Frame>
-  <img src="/images/checks-passed.png" alt="Screenshot of a deployment confirmation message that says All checks have passed." style={{ borderRadius: '0.5rem' }} />
-</Frame>
-
-## Code formatting
-
-We suggest using extensions on your IDE to recognize and format MDX. If you're a VSCode user, consider the [MDX VSCode extension](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx) for syntax highlighting, and [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) for code formatting.
-
-## Troubleshooting
-
-<AccordionGroup>
-  <Accordion title='Error: Could not load the "sharp" module using the darwin-arm64 runtime'>
-
-    This may be due to an outdated version of node. Try the following:
-    1. Remove the currently-installed version of the CLI: `npm remove -g mint`
-    2. Upgrade to Node v19 or higher.
-    3. Reinstall the CLI: `npm i -g mint`
-  </Accordion>
-
-  <Accordion title="Issue: Encountering an unknown error">
-  
-    Solution: Go to the root of your device and delete the `~/.mintlify` folder. Then run `mint dev` again.
-  </Accordion>
-</AccordionGroup>
-
-Curious about what changed in the latest CLI version? Check out the [CLI changelog](https://www.npmjs.com/package/mintlify?activeTab=versions).
+If the CLI fails (for example Sharp / native module issues on Apple Silicon), see Mintlify’s [CLI docs](https://www.npmjs.com/package/mintlify) or remove `~/.mintlify` and reinstall the CLI as described in their troubleshooting guide.

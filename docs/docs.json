@@ -39,52 +39,78 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "User Guide",
+        "tab": "User guide",
         "groups": [
           {
             "group": "Getting started",
-            "pages": ["user/introduction", "user/quickstart"]
+            "pages": ["index", "quickstart"]
           },
           {
-            "group": "Submitting reports",
+            "group": "Account",
             "pages": [
-              "user/how-to-report",
-              "user/report-categories",
-              "user/location-accuracy"
+              "account/sign-up",
+              "account/phone-verification",
+              "account/notifications"
             ]
           },
           {
-            "group": "Your account",
-            "pages": ["user/creating-an-account", "user/privacy-and-data"]
+            "group": "Reports",
+            "pages": [
+              "reports/browsing",
+              "reports/submitting",
+              "reports/voting-and-comments",
+              "reports/flagging"
+            ]
           },
           {
-            "group": "Support",
-            "pages": ["user/faq"]
+            "group": "Map",
+            "pages": ["map/overview"]
+          },
+          {
+            "group": "Help",
+            "pages": ["help/faq", "help/troubleshooting"]
           }
         ]
       },
       {
-        "tab": "Developer Docs",
+        "tab": "Developers & docs site",
+        "groups": [
+          {
+            "group": "Cora app & repo",
+            "pages": ["development"]
+          },
+          {
+            "group": "Mintlify (this site)",
+            "pages": [
+              "essentials/markdown",
+              "essentials/code",
+              "essentials/images",
+              "essentials/navigation",
+              "essentials/reusable-snippets",
+              "essentials/settings"
+            ]
+          },
+          {
+            "group": "Editor tooling",
+            "pages": ["ai-tools/cursor", "ai-tools/claude-code", "ai-tools/windsurf"]
+          }
+        ]
+      },
+      {
+        "tab": "API reference",
         "groups": [
           {
             "group": "Overview",
-            "pages": ["dev/introduction", "dev/tech-stack", "dev/architecture"]
+            "pages": ["api-reference/introduction"]
           },
           {
-            "group": "Setup",
-            "pages": ["dev/environment-setup", "dev/environment-variables"]
-          },
-          {
-            "group": "Database",
-            "pages": ["dev/supabase-schema", "dev/postgis-setup"]
-          },
-          {
-            "group": "Auth",
-            "pages": ["dev/google-oauth", "dev/twilio-verify"]
-          },
-          {
-            "group": "Deployment",
-            "pages": ["dev/deployment-guide"]
+            "group": "Endpoints",
+            "pages": [
+              "api-reference/endpoint/get",
+              "api-reference/endpoint/create",
+              "api-reference/endpoint/delete",
+              "api-reference/endpoint/webhook"
+            ]
           }
         ]
       }
