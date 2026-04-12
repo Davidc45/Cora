@@ -32,6 +32,14 @@ function trim(value: FormDataEntryValue | null): string {
   return (value ?? '').toString().trim()
 }
 
+/** Allow only same-origin relative paths for post-login redirects. */
+function safeInternalPath(value: string): string | null {
+  const t = value.trim()
+  if (!t || !t.startsWith('/') || t.startsWith('//')) return null
+  if (t.includes('://')) return null
+  return t
+}
+
 type TurnstileVerifyResponse = {
   success: boolean
   'error-codes'?: string[]
@@ -75,6 +83,7 @@ async function verifyTurnstileToken(token: string): Promise<TurnstileVerifyRespo
  */
 export async function login(formData: FormData) {
   const supabase = await createClient()
+  const nextSafe = safeInternalPath(trim(formData.get('next')))
   const data = {
     email: formData.get('email') as string,
     password: formData.get('password') as string,
@@ -83,11 +92,13 @@ export async function login(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
-    redirect('/pages/login?err=Invalid Credentials')
+    const q = new URLSearchParams({ err: 'Invalid Credentials' })
+    if (nextSafe) q.set('next', nextSafe)
+    redirect(`/pages/login?${q.toString()}`)
   }
 
   revalidatePath('/', 'layout')
-  redirect('/')
+  redirect(nextSafe ?? '/')
 }
 
 /**
@@ -171,54 +182,83 @@ export async function updateProfile(formData: FormData) {
   const pfpDatabase = 'user-avatars';
   const supabase = await createClient();
   console.log('updating profile...')
-  const image: File = formData.get('image') as File;
+  const imageEntry = formData.get('image');
+  const hasNewImage = imageEntry instanceof File && imageEntry.size > 0;
+  const image = hasNewImage ? imageEntry : null;
   const oldAvatarName = trim(formData.get('oldAvatarName'));
-  const removeImage = formData.get('remove');
+  const removeAvatar = formData.get('removeAvatar');
+  const wantsRemove =
+    removeAvatar === '1' ||
+    removeAvatar === 'true' ||
+    (typeof removeAvatar === 'string' && removeAvatar.toLowerCase() === 'on');
   const username = trim(formData.get('Username'));
   const name = trim(formData.get('Name'));
-  const phoneNum = trim(formData.get('Phone'));
   const uid = trim(formData.get('uid'));
-  let url = null
-  let avatarName = null
 
-  if(!removeImage) {
-    avatarName = username + '-' + image.name;
-    console.log('uploading image to cloudflare...')
+  let nextAvatarUrl: string | null | undefined = undefined;
+  let nextAvatarName: string | null | undefined = undefined;
+
+  if (wantsRemove) {
+    console.log('removing image: ', oldAvatarName);
+    await deleteImage({ image: oldAvatarName, database: 'user-avatars' });
+    nextAvatarUrl = null;
+    nextAvatarName = null;
+  } else if (image) {
+    const avatarName = `${username}-${image.name}`;
+    console.log('uploading image to cloudflare...');
     const uploadImageStatus = await postImage({
-      image: image, 
-      database: pfpDatabase, 
-      rid: null, 
-      username: username
+      image,
+      database: pfpDatabase,
+      rid: null,
+      username: username,
     });
-  
-    if(uploadImageStatus.status === 500) {
-      console.log('error uploading avatar: ', uploadImageStatus.message)
-    } 
-    url = uploadImageStatus?.url;
-  } else {
-    console.log('removing image: ', oldAvatarName)
-    deleteImage({image: oldAvatarName, database: 'user-avatars'})
+
+    if (uploadImageStatus.status !== 200 || typeof uploadImageStatus.url !== 'string') {
+      console.log('error uploading avatar: ', uploadImageStatus.message);
+      redirect(
+        `/pages/account?err=${encodeURIComponent('Could not upload profile image. Try again.')}`,
+      );
+    }
+    nextAvatarUrl = uploadImageStatus.url;
+    nextAvatarName = avatarName;
   }
 
+  const updateRow: Record<string, unknown> = {
+    full_name: name,
+    username: username,
+  };
+  if (nextAvatarUrl !== undefined) {
+    updateRow.avatar_url = nextAvatarUrl;
+    updateRow.avatar_name = nextAvatarName;
+  }
+
+  console.log('uploading data to supabase...');
+  const { error } = await supabase.from('profiles').update(updateRow).eq('id', uid);
 
 
-  console.log('uploading data to supabase...')
-  const { error } = await supabase
-    .from('profiles')
-    .update({
-      full_name: name,
-      username: username,
-      avatar_name: avatarName,
-      avatar_url: url,
-      phone: phoneNum
-    })
-    .eq('id', uid)
-
-
-  if(error) {
+  if (error) {
     redirect(`/pages/account?err=${error.message}`)
-  } 
-    
+  }
+
+  const { data: profileRow } = await supabase
+    .from('profiles')
+    .select('avatar_url')
+    .eq('id', uid)
+    .maybeSingle()
+
+  const syncedAvatar =
+    typeof profileRow?.avatar_url === 'string'
+      ? profileRow.avatar_url.trim()
+      : ''
+
+  const { error: metaErr } = await supabase.auth.updateUser({
+    data: { avatar_url: syncedAvatar },
+  })
+  if (metaErr) {
+    console.log('sync avatar to auth metadata:', metaErr.message)
+  }
+
+  revalidatePath('/', 'layout')
   redirect('/pages/account?success=Account updated successfully')
 }
 
@@ -344,18 +384,25 @@ export async function resetpass(formData: FormData) {
   )
 }
 
-export async function signInWithGoogle() {
+export async function signInWithGoogle(formData?: FormData) {
   const origin = (await headers()).get('origin')
+  const nextSafe = formData
+    ? safeInternalPath(trim(formData.get('next')))
+    : null
+  const callback =
+    nextSafe != null
+      ? `${origin}/auth/callback?next=${encodeURIComponent(nextSafe)}`
+      : `${origin}/auth/callback`
   const supabase = await createClient()
   const { error, data } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${origin}/auth/callback`,
+      redirectTo: callback,
     },
   })
 
-  if(error) {
-    console.log(error) 
+  if (error) {
+    console.log(error)
   } else {
     return redirect(data.url)
   }

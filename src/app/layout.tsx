@@ -1,9 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Alexandria, Gantari, Geist, Geist_Mono } from "next/font/google";
 import NavBar from "./components/navbar";
 import PhoneVerificationWrapper from "./components/phone-verification-wrapper";
 import RegisterSw from "./components/register-sw";
+import ConditionalSiteFooter from "./components/conditional-site-footer";
 import './styles/globals.css';
+import './styles/navbar.css';
+import './styles/footer.css';
 import './styles/forms.css';
 import './styles/home.css';
 import './styles/reports.css';
@@ -32,6 +35,16 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const alexandria = Alexandria({
+  variable: "--font-alexandria",
+  subsets: ["latin"],
+});
+
+const gantari = Gantari({
+  variable: "--font-gantari",
   subsets: ["latin"],
 });
 
@@ -145,24 +158,31 @@ export default async function RootLayout({
   } = await supabase.auth.getUser();
 
   let phoneVerified = false;
+  let profileAvatarUrl: string | null = null;
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('phone_verified')
+      .select('phone_verified, avatar_url')
       .eq('id', user.id)
       .maybeSingle();
     phoneVerified = profile?.phone_verified === true;
+    profileAvatarUrl =
+      typeof profile?.avatar_url === 'string' ? profile.avatar_url : null;
   }
 
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${alexandria.variable} ${gantari.variable} antialiased`}
       >
         <RegisterSw />
-        <NavBar user={user} />
+        <NavBar user={user} profileAvatarUrl={profileAvatarUrl} />
         <PhoneVerificationWrapper user={user} phoneVerified={phoneVerified} />
         <main className="site-main">{children}</main>
+        <ConditionalSiteFooter
+          siteOrigin={defaultUrl}
+          contactEmail={process.env.NEXT_PUBLIC_CONTACT_EMAIL}
+        />
         <Analytics />
         <SpeedInsights />
       </body>
