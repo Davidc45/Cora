@@ -78,21 +78,6 @@
           {
             "group": "Cora app & repo",
             "pages": ["development", "tech-stack"]
-          },
-          {
-            "group": "Mintlify (this site)",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/navigation",
-              "essentials/reusable-snippets",
-              "essentials/settings"
-            ]
-          },
-          {
-            "group": "Editor tooling",
-            "pages": ["ai-tools/cursor", "ai-tools/claude-code", "ai-tools/windsurf"]
           }
         ]
       },
