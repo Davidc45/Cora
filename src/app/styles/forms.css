@@ -1,12 +1,3 @@
-.login-container {
-    display: flex;
-    flex-direction: column;
-    width: 300px;
-    margin: auto;
-    background-color: var(--secondary-color);
-    padding: 55px;
-}
-
 label {
     padding: 10px 0;
 }
@@ -69,66 +60,27 @@ input:focus {
     width: 20px;
 }
 
-.google-login {
-    cursor: pointer;
-    border: solid;
-    border-radius: 10px;
-    padding: 10px 50px;
-    width: 50%;
-    text-align: center;
-    margin: 20px auto;
-    background-color: rgb(109, 109, 109);
-    color: white;
-    border-color: black;
-    font: inherit;
+/* Google “G” badge (Sign up / Sign in) */
+.google-oauth-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background-color: #fff;
+    flex-shrink: 0;
+}
+
+.google-oauth-mark__svg {
     display: block;
-    box-sizing: border-box;
+    width: 18px;
+    height: 18px;
 }
 
-.google-login:hover {
-    background-color: rgb(62, 62, 62);
-}
-
-.login-email-form,
-.login-google-form {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-}
-
-.login-button {
-    cursor: pointer;
-    border: solid;
-    width: 40%;
-    margin: 20px auto;
-    padding: 10px;
-    border-radius: 15px;
-    background-color: rgb(233, 233, 233);
-    transition: background-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.login-button:hover {
-    background-color: rgb(200, 200, 200);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-}
-
-.login-button:focus-visible {
-    outline: 2px solid rgb(80, 80, 80);
-    outline-offset: 2px;
-}
-
-.or {
-    text-align: center;
-}
-
-.signup-with-google {
-    border: solid;
-    padding: 10px 0;
-    cursor: pointer;
-}
-
-/* —— Sign up page: split hero + form (matches marketing mock desktop + mobile) —— */
-.signup-page {
+/* —— Sign up / Sign in: split layout (shared tokens + form chrome on .login-page__*) —— */
+.signup-page,
+.login-page {
     --signup-hero-bg: #1a2634;
     --signup-ink: #111827;
     --signup-muted: #64748b;
@@ -163,6 +115,47 @@ input:focus {
     align-items: stretch;
     /* Tighter top padding so hero art stays in the first viewport */
     padding: clamp(0.5rem, 2vw, 1rem) clamp(1.25rem, 5vw, 2.5rem) clamp(1.25rem, 4vw, 2rem);
+}
+
+/* Sign in: light hero column — heading + art centered as a block; art scales with form column */
+.login-page__hero {
+    background: #f4f1ea;
+    color: #1a2634;
+    flex: 0 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.login-page__hero-inner {
+    width: 100%;
+    max-width: none;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: clamp(0.85rem, 2.5dvh, 1.5rem);
+    padding: clamp(1.25rem, 4dvh, 2rem) clamp(1.25rem, 5vw, 2.5rem)
+        clamp(1rem, 3dvh, 1.75rem);
+    box-sizing: border-box;
+    /* Mobile: compact stack under navbar; desktop fills column in 900px block */
+    flex: 0 1 auto;
+    min-height: 0;
+}
+
+.login-page__welcome-title {
+    margin: 0;
+    font-family: var(--font-gantari), ui-sans-serif, system-ui, sans-serif;
+    font-size: clamp(1.65rem, 5vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1.15;
+    color: #1a2634;
+    text-align: center;
+    width: 100%;
+    max-width: min(24ch, 100%);
 }
 
 .signup-page__welcome-title {
@@ -282,6 +275,16 @@ input:focus {
     align-items: center;
 }
 
+.login-page__hero-art {
+    margin: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 0 1 auto;
+    min-height: 0;
+}
+
 .signup-page__hero-img {
     width: 100%;
     max-width: min(100%, 28rem);
@@ -292,7 +295,19 @@ input:focus {
     backface-visibility: hidden;
 }
 
-.signup-page__panel {
+.login-page__hero-img {
+    width: 100%;
+    max-width: min(100%, 42rem);
+    height: auto;
+    /* Mobile-first: larger art vs stacked form; desktop cap in 900px block */
+    max-height: min(52dvh, 460px);
+    object-fit: contain;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+.signup-page__panel,
+.login-page__panel {
     flex: 1 1 auto;
     width: 100%;
     background: #fff;
@@ -303,13 +318,15 @@ input:focus {
     box-sizing: border-box;
 }
 
-.signup-page__form {
+.signup-page__form,
+.login-page__form {
     display: flex;
     flex-direction: column;
     width: 100%;
 }
 
-.signup-page__form-title {
+.signup-page__form-title,
+.login-page__form-title {
     margin: 0 0 0.2rem;
     font-family: var(--font-gantari), ui-sans-serif, system-ui, sans-serif;
     font-size: clamp(1.2rem, 2.8vw, 1.45rem);
@@ -319,7 +336,8 @@ input:focus {
     line-height: 1.15;
 }
 
-.signup-page__form-subtitle {
+.signup-page__form-subtitle,
+.login-page__form-subtitle {
     margin: 0 0 clamp(0.5rem, 1.8dvh, 0.75rem);
     text-align: center;
     font-size: clamp(0.78rem, 1.6vw, 0.88rem);
@@ -327,11 +345,13 @@ input:focus {
     line-height: 1.35;
 }
 
-.signup-page__field {
+.signup-page__field,
+.login-page__field {
     margin-bottom: clamp(0.35rem, 1.2dvh, 0.55rem);
 }
 
-.signup-page__label-row {
+.signup-page__label-row,
+.login-page__label-row {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
@@ -339,7 +359,8 @@ input:focus {
     margin-bottom: 0.2rem;
 }
 
-.signup-page__label {
+.signup-page__label,
+.login-page__label {
     display: block;
     padding: 0;
     margin: 0;
@@ -349,13 +370,15 @@ input:focus {
     color: var(--signup-ink);
 }
 
-.signup-page__label-hint {
+.signup-page__label-hint,
+.login-page__label-hint {
     font-size: 0.72rem;
     font-weight: 500;
     color: var(--signup-muted);
 }
 
-.signup-page .signup-page__input {
+.signup-page .signup-page__input,
+.login-page .login-page__input {
     box-sizing: border-box;
     width: 100%;
     margin: 0;
@@ -369,23 +392,27 @@ input:focus {
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.signup-page .signup-page__input::placeholder {
+.signup-page .signup-page__input::placeholder,
+.login-page .login-page__input::placeholder {
     color: #94a3b8;
 }
 
-.signup-page .signup-page__input:focus {
+.signup-page .signup-page__input:focus,
+.login-page .login-page__input:focus {
     outline: none;
     border-color: var(--signup-orange);
     box-shadow: 0 0 0 3px rgba(242, 127, 13, 0.2);
 }
 
-.signup-page__password-block {
+.signup-page__password-block,
+.login-page__password-block {
     display: flex;
     align-items: stretch;
     width: 100%;
 }
 
-.signup-page .signup-page__input--with-toggle {
+.signup-page .signup-page__input--with-toggle,
+.login-page .login-page__input--with-toggle {
     flex: 1 1 auto;
     min-width: 0;
     border-top-right-radius: 0;
@@ -393,7 +420,8 @@ input:focus {
     border-right: none;
 }
 
-.signup-page__eye {
+.signup-page__eye,
+.login-page__eye {
     flex: 0 0 auto;
     display: flex;
     align-items: center;
@@ -409,22 +437,26 @@ input:focus {
     transition: background-color 0.15s ease;
 }
 
-.signup-page__eye:hover {
+.signup-page__eye:hover,
+.login-page__eye:hover {
     background: #f8fafc;
 }
 
-.signup-page__eye:focus-visible {
+.signup-page__eye:focus-visible,
+.login-page__eye:focus-visible {
     outline: 2px solid var(--signup-orange);
     outline-offset: 2px;
 }
 
-.signup-page__eye-img {
+.signup-page__eye-img,
+.login-page__eye-img {
     width: 18px;
     height: 18px;
     object-fit: contain;
 }
 
-.signup-page__turnstile {
+.signup-page__turnstile,
+.login-page__turnstile {
     margin: clamp(0.15rem, 1dvh, 0.35rem) 0 clamp(0.25rem, 1dvh, 0.45rem);
     width: 100%;
     align-self: stretch;
@@ -432,17 +464,20 @@ input:focus {
 }
 
 /* Match text fields: full row width; Turnstile `flexible` fills this container */
-.signup-page__turnstile .turnstile-field-root {
+.signup-page__turnstile .turnstile-field-root,
+.login-page__turnstile .turnstile-field-root {
     width: 100%;
     display: block;
     line-height: 0;
 }
 
-.signup-page__turnstile .turnstile-field-root iframe {
+.signup-page__turnstile .turnstile-field-root iframe,
+.login-page__turnstile .turnstile-field-root iframe {
     width: 100% !important;
 }
 
-.signup-page__submit {
+.signup-page__submit,
+.login-page__submit {
     display: block;
     width: 100%;
     min-height: 2.35rem;
@@ -460,12 +495,14 @@ input:focus {
     transition: background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.signup-page__submit:hover:not(:disabled) {
+.signup-page__submit:hover:not(:disabled),
+.login-page__submit:hover:not(:disabled) {
     background: var(--signup-orange-hover);
     box-shadow: 0 6px 18px rgba(242, 127, 13, 0.4);
 }
 
-.signup-page__submit:disabled {
+.signup-page__submit:disabled,
+.login-page__submit:disabled {
     opacity: 0.75;
     cursor: not-allowed;
 }
@@ -498,7 +535,8 @@ input:focus {
     line-height: 1.35;
 }
 
-.signup-page .error {
+.signup-page .error,
+.login-page .error {
     margin-top: 0.4rem;
     border-radius: 6px;
     border: 1px solid rgba(185, 28, 28, 0.35);
@@ -506,7 +544,8 @@ input:focus {
     padding: 0.4rem 0.5rem;
 }
 
-.signup-page__or {
+.signup-page__or,
+.login-page__or {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -514,13 +553,15 @@ input:focus {
     width: 100%;
 }
 
-.signup-page__or-line {
+.signup-page__or-line,
+.login-page__or-line {
     flex: 1 1 auto;
     height: 1px;
     background: var(--signup-border);
 }
 
-.signup-page__or-text {
+.signup-page__or-text,
+.login-page__or-text {
     flex: 0 0 auto;
     font-size: 1rem;
     color: black;
@@ -529,7 +570,8 @@ input:focus {
     margin: 0 15px;
 }
 
-.signup-page__google {
+.signup-page__google,
+.login-page__google {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -549,51 +591,53 @@ input:focus {
     transition: background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.signup-page__google:hover {
+.signup-page__google:hover,
+.login-page__google:hover {
     background: #1e293b;
     box-shadow: 0 4px 12px rgba(17, 24, 39, 0.2);
 }
 
-.signup-page__google:focus-visible {
+.signup-page__google:focus-visible,
+.login-page__google:focus-visible {
     outline: 2px solid var(--signup-orange);
     outline-offset: 2px;
 }
 
-.signup-page__google-form {
+.signup-page__google-form,
+.login-page__google-form {
     display: block;
     width: 100%;
     margin: 0;
 }
 
-.signup-page__google-mark {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
-}
-
-.signup-page__footer {
+.signup-page__footer,
+.login-page__footer {
     margin-top: clamp(0.55rem, 2dvh, 0.85rem);
     text-align: center;
 }
 
-.signup-page__footer-line {
+.signup-page__footer-line,
+.login-page__footer-line {
     margin: 0 0 0.35rem;
     font-size: clamp(0.78rem, 1.5vw, 0.85rem);
     color: var(--signup-ink);
     line-height: 1.35;
 }
 
-.signup-page__footer-link {
+.signup-page__footer-link,
+.login-page__footer-link {
     font-weight: 700;
     color: var(--signup-link-green);
     text-decoration: none;
 }
 
-.signup-page__footer-link:hover {
+.signup-page__footer-link:hover,
+.login-page__footer-link:hover {
     text-decoration: underline;
 }
 
-.signup-page__home-link {
+.signup-page__home-link,
+.login-page__home-link {
     display: inline-block;
     font-size: clamp(0.78rem, 1.5vw, 0.85rem);
     font-weight: 600;
@@ -602,33 +646,59 @@ input:focus {
     line-height: 1.35;
 }
 
-.signup-page__home-link:hover {
+.signup-page__home-link:hover,
+.login-page__home-link:hover {
     color: var(--signup-orange);
+}
+
+.login-page__forgot {
+    display: inline-block;
+    margin: 0 0 clamp(0.35rem, 1.2dvh, 0.5rem);
+    font-size: clamp(0.78rem, 1.5vw, 0.85rem);
+    font-weight: 600;
+    color: var(--signup-orange);
+    text-decoration: none;
+}
+
+.login-page__forgot:hover {
+    text-decoration: underline;
+    color: var(--signup-orange-hover);
 }
 
 /* Shorter laptop / zoomed windows: shave a bit more vertical space */
 @media (min-width: 900px) and (max-height: 780px) {
-    .signup-page__panel {
+    .signup-page__panel,
+    .login-page__panel {
         padding: clamp(0.35rem, 1.5dvh, 0.65rem) clamp(1.2rem, 4vw, 1.85rem);
     }
 
-    .signup-page__form-subtitle {
+    .signup-page__form-subtitle,
+    .login-page__form-subtitle {
         margin-bottom: clamp(0.35rem, 1.2dvh, 0.5rem);
     }
 
-    .signup-page__field {
+    .signup-page__field,
+    .login-page__field {
         margin-bottom: clamp(0.28rem, 1dvh, 0.42rem);
     }
 }
 
 @media (min-width: 900px) {
-    .signup-page {
+    .signup-page,
+    .login-page {
         flex-direction: row;
         align-items: stretch;
         min-height: calc(100dvh - 64px);
     }
 
     .signup-page__hero {
+        flex: 1 1 50%;
+        max-width: 50%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .login-page__hero {
         flex: 1 1 50%;
         max-width: 50%;
         display: flex;
@@ -645,12 +715,44 @@ input:focus {
         padding: clamp(0.75rem, 2vw, 1.25rem) clamp(2rem, 5vw, 4rem) clamp(2rem, 4vw, 3.5rem);
     }
 
+    .login-page__hero-inner {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        max-width: none;
+        min-height: 0;
+        height: 100%;
+        padding: clamp(1.25rem, 3vh, 2.5rem) clamp(1.5rem, 4vw, 3rem);
+        gap: clamp(1rem, 2.5vh, 2rem);
+    }
+
+    .login-page__welcome-title {
+        font-size: clamp(1.85rem, 2.8vw, 2.5rem);
+    }
+
     .signup-page__hero-art {
         margin-top: 5rem;
     }
 
+    .login-page__hero-art {
+        margin-top: 0;
+        flex: 0 1 auto;
+        width: 100%;
+        max-width: min(100%, 48rem);
+    }
+
     .signup-page__hero-img {
         max-height: min(30dvh, 260px);
+    }
+
+    .login-page__hero-img {
+        max-width: 100%;
+        max-height: min(calc(100dvh - 64px - 9rem), min(58vw, 640px));
+        width: auto;
+        height: auto;
     }
 
     .signup-page__feature-title {
@@ -663,7 +765,8 @@ input:focus {
         line-height: 1.45;
     }
 
-    .signup-page__panel {
+    .signup-page__panel,
+    .login-page__panel {
         flex: 1 1 50%;
         max-width: 50%;
         display: flex;
