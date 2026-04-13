@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
 import type { Report } from "./mapTypes";
 import { generateReportPopup } from "./mapHelpers";
+import "../styles/map.css"; //! new 
 
 import {
   CATEGORY_OPTIONS,
@@ -13,7 +14,7 @@ import {
   resolveMapStatus,
   statusToColor,
 } from "./mapHelpers";
-import { styles } from "./mapStyles";
+import { styles } from "./mapStyles"; //! keep here for now 
 import { ensureGoogleMapsReady } from "@/lib/googleMapsLoader";
 
 const KNOWN_CATEGORY_IDS = new Set(CATEGORY_OPTIONS.map((c) => c.id));
@@ -53,32 +54,7 @@ export default function ReportsMap({
     disputed: true,
   });
 
-  const wrapperStyle = useMemo((): CSSProperties => {
-    if (!fillViewport) return styles.wrapper;
-    return {
-      ...styles.wrapper,
-      flex: 1,
-      minHeight: 0,
-      width: "100%",
-      maxWidth: "none",
-      margin: 0,
-      display: "flex",
-      flexDirection: "column",
-      position: "relative",
-      overflow: "hidden",
-    };
-  }, [fillViewport]);
-
-  const mapBlockStyle = useMemo((): CSSProperties => {
-    if (!fillViewport) return styles.map;
-    return {
-      ...styles.map,
-      flex: 1,
-      minHeight: 0,
-      height: "auto",
-      borderRadius: 0,
-    };
-  }, [fillViewport]);
+//! this is where wrapperStyle and mapBlockStyle were 
 
   const filteredReports = useMemo(() => {
     return (reports ?? []).filter((r) => {
@@ -293,33 +269,18 @@ export default function ReportsMap({
   }
 
   return (
-    <div style={wrapperStyle}>
+    <div className={`reports-map-wrapper ${fillViewport ? "fill-viewport" : ""}`}>
       {mapsUnavailableMessage ? (
         <div
-          style={{
-            ...mapBlockStyle,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "#e5e5e5",
-          }}
+          className={`reports-map-canvas reports-map-unavailable ${fillViewport ? "fill-viewport" : ""}`}
           role="status"
         >
-          <p
-            style={{
-              padding: 24,
-              textAlign: "center",
-              maxWidth: 440,
-              margin: 0,
-              lineHeight: 1.5,
-              color: "#333",
-            }}
-          >
+          <p className="reports-map-unavailable-message">
             {mapsUnavailableMessage}
           </p>
         </div>
       ) : (
-        <div ref={mapRef} style={mapBlockStyle} />
+        <div ref={mapRef} className={`reports-map-canvas ${fillViewport ? "fill-viewport" : ""}`} />
       )}
 
       <div
