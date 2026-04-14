@@ -24,7 +24,8 @@ export function ensureGoogleMapsReady(
 
     mapsReady = Promise.all([
       importLibrary('maps'),
-      importLibrary('marker'), // ⭐ THIS IS THE KEY LINE
+      importLibrary('marker'),
+      importLibrary('places'),
     ])
       .then(() => undefined)
       .catch((err) => {
