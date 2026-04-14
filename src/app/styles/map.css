@@ -222,3 +222,42 @@
     font-size: 22px;
     line-height: 1;
 }
+
+/* icons */
+.report-marker {
+    width: 44px;
+    height: 56px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.report-marker-pin {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.report-marker-glyph {
+    width: 24px;
+    height: 24px;
+    background: white;
+    border-radius: 50%;
+    transform: rotate(45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.report-marker-glyph img {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+    display: block;
+}

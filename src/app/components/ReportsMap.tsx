@@ -5,6 +5,7 @@ import { MarkerClusterer } from "@googlemaps/markerclusterer";
 import type { Report } from "./mapTypes";
 import { generateReportPopup } from "./mapHelpers";
 import "../styles/map.css"; //! new 
+import { getCategoryIcon, createMarkerContent } from "./markerIcons";;
 
 import {
   CATEGORY_OPTIONS,
@@ -86,7 +87,7 @@ export default function ReportsMap({
     const key = googleMapsApiKey;
     const mapId = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID?.trim() || undefined;
 
-    let markers: google.maps.Marker[] = [];
+    let markers: google.maps.marker.AdvancedMarkerElement[] = [];
     let clusterer: MarkerClusterer | null = null;
     let infoWindow: google.maps.InfoWindow | null = null;
     let hoverWindow: google.maps.InfoWindow | null = null;
@@ -115,53 +116,49 @@ export default function ReportsMap({
         const [lng, lat] = r.location_geojson!.coordinates;
         const status = resolveMapStatus(r.score, r.status);
         const color = statusToColor(status);
-        const iconPath = categoryToIcon(r.category_id);
+        const iconUrl = getCategoryIcon(r.category_id);
+        const content = createMarkerContent(iconUrl, color);
 
-        const marker = new gmaps.maps.Marker({
-          map,
-          position: { lat, lng },
-          title: r.report_title ?? undefined,
-          icon: {
-            path: gmaps.maps.SymbolPath.CIRCLE,
-            fillColor: color,
-            fillOpacity: 1,
-            strokeColor: "#ffffff",
-            strokeWeight: 2,
-            scale: 14,
-          },
-        });
-
-        const openHover = () => {
-          hoverWindow!.setContent(
-            generateReportPopup(
-              r,
-              iconPath,
-              categoryToLabel(r.category_id),
-              status,
-              formatReportDate(r.created_at)
-            )
-          );
-          hoverWindow!.open({ map, anchor: marker, shouldFocus: false });
-        };
-
-        marker.addListener("mouseover", openHover);
-        marker.addListener("mouseout", () => hoverWindow!.close());
-
-        marker.addListener("click", () => {
-          infoWindow!.setContent(
-            generateReportPopup(
-              r,
-              iconPath,
-              categoryToLabel(r.category_id),
-              status,
-              formatReportDate(r.created_at)
-            )
-          );
-          infoWindow!.open({ map, anchor: marker, shouldFocus: false });
-        });
-
-        return marker;
+        const marker = new gmaps.maps.marker.AdvancedMarkerElement({
+        map,
+        position: { lat, lng },
+        title: r.report_title ?? undefined,
+        content,
       });
+
+        
+
+      const openHover = () => {
+        hoverWindow!.setContent(
+          generateReportPopup(
+            r,
+            iconUrl,
+            categoryToLabel(r.category_id),
+            status,
+            formatReportDate(r.created_at)
+          )
+        );
+        hoverWindow!.open({ map, anchor: marker });
+      };
+
+      content.addEventListener("mouseenter", openHover);
+      content.addEventListener("mouseleave", () => hoverWindow!.close());
+
+      marker.addListener("click", () => {
+        infoWindow!.setContent(
+          generateReportPopup(
+            r,
+            iconUrl,
+            categoryToLabel(r.category_id),
+            status,
+            formatReportDate(r.created_at)
+          )
+        );
+        infoWindow!.open({ map, anchor: marker });
+      });
+
+      return marker;
+    });
 
       clusterer = new MarkerClusterer({ map, markers });
 
@@ -177,7 +174,9 @@ export default function ReportsMap({
       if (clusterer) clusterer.setMap(null);
       if (infoWindow) infoWindow.close();
       if (hoverWindow) hoverWindow.close();
-      markers.forEach((m) => m.setMap(null));
+      markers.forEach((m) => {
+        m.map = null;
+      });
       markers = [];
     };
   }, [filteredReports, googleMapsApiKey, fillViewport]);

@@ -21,12 +21,17 @@ export function ensureGoogleMapsReady(
       v: 'weekly',
       ...(mapId ? { mapIds: [mapId] } : {}),
     });
-    mapsReady = importLibrary('maps')
+
+    mapsReady = Promise.all([
+      importLibrary('maps'),
+      importLibrary('marker'), // ⭐ THIS IS THE KEY LINE
+    ])
       .then(() => undefined)
       .catch((err) => {
         mapsReady = null;
         throw err;
       });
   }
+
   return mapsReady;
 }
