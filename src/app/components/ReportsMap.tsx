@@ -19,6 +19,16 @@ import { ensureGoogleMapsReady } from "@/lib/googleMapsLoader";
 
 const KNOWN_CATEGORY_IDS = new Set(CATEGORY_OPTIONS.map((c) => c.id));
 
+const categorySidebarIconMapById: Record<number, string> = {
+  1: "/icons/robbery.png",
+  2: "/icons/traffic.png",
+  3: "/icons/assault.png",
+  4: "/icons/suspicious.png",
+  5: "/icons/vandalism.png",
+  6: "/icons/hazard.png",
+  7: "/icons/other.png",
+};
+
 type ReportsMapProps = {
   reports: Report[];
   fillViewport?: boolean;
@@ -47,7 +57,7 @@ export default function ReportsMap({
   const [searchQuery, setSearchQuery] = useState("");
   const [predictions, setPredictions] = useState<google.maps.places.AutocompletePrediction[]>([]);
   const [showPredictions, setShowPredictions] = useState(false);
-  const [filtersOpen, setFiltersOpen] = useState(true);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const [selectedCategories, setSelectedCategories] = useState<number[]>(
     CATEGORY_OPTIONS.map((c) => c.id)
@@ -337,6 +347,8 @@ export default function ReportsMap({
   };
 }, []);
 
+//! temporary log to debug category icons - remove later
+console.log("CATEGORY_OPTIONS", CATEGORY_OPTIONS);
   return (
     <div className={`reports-map-wrapper ${fillViewport ? "fill-viewport" : ""}`}>
       {mapsUnavailableMessage ? (
@@ -352,98 +364,114 @@ export default function ReportsMap({
         <div ref={mapRef} className={`reports-map-canvas ${fillViewport ? "fill-viewport" : ""}`} />
       )}
 
-      <div
-        className={`filter-panel ${filtersOpen ? "filter-panel-open" : "filter-panel-closed"}`}
-      >
+      <div className={`filter-sidebar ${filtersOpen ? "open" : "closed"}`}>
         <button
           onClick={() => setFiltersOpen((prev) => !prev)}
-          className="filter-header-button"
+          className="filter-toggle-tab"
+          type="button"
         >
           <span>Filters</span>
           <span className="filter-chevron">
-            {filtersOpen ? "⌃" : "⌄"}
+            {filtersOpen ? "‹" : "›"}
           </span>
         </button>
 
-        {filtersOpen && (
-          <div className="filter-body">
-            <div className="filter-section">
-              <div className="section-title">
-                <span className="section-dot section-dot-timeframe" />
-                Timeframe
-              </div>
+        <div className="filter-sidebar-content">
+          <div className="filter-sidebar-header">Map Filters</div>
 
-              <div className="option-grid">
-                <label><input type="radio" name="timeframe" disabled /> Daily</label>
-                <label><input type="radio" name="timeframe" disabled defaultChecked /> Weekly</label>
-                <label><input type="radio" name="timeframe" disabled /> Monthly</label>
-              </div>
+          <div className="filter-section">
+            <div className="section-title">
+              <span className="section-dot section-dot-timeframe" />
+              Report Timeline
             </div>
 
-            <div className="filter-section">
-              <div className="section-title">
-                <span className="section-dot section-dot-status" />
-                Report Status
-              </div>
+            <div className="option-grid">
+              <button type="button" className="filter-chip selected" disabled>
+                <img src="/icons/timeline.png" alt="" className="filter-row-icon" />
+                <span>Past Week</span>
+              </button>
 
-              <div className="option-grid">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={statusFilters.supported}
-                    onChange={() => toggleStatus("supported")}
-                  />{" "}
-                  Community Supported
-                </label>
+              <button type="button" className="filter-chip" disabled>
+                <img src="/icons/timeline.png" alt="" className="filter-row-icon" />
+                <span>Today</span>
+              </button>
 
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={statusFilters.unconfirmed}
-                    onChange={() => toggleStatus("unconfirmed")}
-                  />{" "}
-                  Unconfirmed
-                </label>
-
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={statusFilters.disputed}
-                    onChange={() => toggleStatus("disputed")}
-                  />{" "}
-                  Disputed
-                </label>
-              </div>
+              <button type="button" className="filter-chip" disabled>
+                <img src="/icons/timeline.png" alt="" className="filter-row-icon" />
+                <span>Past Month</span>
+              </button>
             </div>
-
-            <div className="filter-section-last">
-              <div className="section-title">
-                <span className="section-dot section-dot-category" />
-                Category
-              </div>
-
-              <div className="category-grid">
-                {CATEGORY_OPTIONS.map((category) => (
-                  <label
-                    key={category.id}
-                    className="category-label"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedCategories.includes(category.id)}
-                      onChange={() => toggleCategory(category.id)}
-                    />
-                    {category.label}
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <button onClick={resetAllFilters} className="reset-button">
-              RESET ALL FILTERS
-            </button>
           </div>
-        )}
+
+          <div className="filter-section">
+            <div className="section-title">
+              <span className="section-dot section-dot-status" />
+              Report Status
+            </div>
+
+            <div className="option-grid">
+              <button
+                type="button"
+                className={`filter-chip ${statusFilters.supported ? "selected" : ""}`}
+                onClick={() => toggleStatus("supported")}
+              >
+                <img src="/icons/communitySupported.png" alt="" className="filter-row-icon" />
+                <span>Supported</span>
+              </button>
+
+              <button
+                type="button"
+                className={`filter-chip ${statusFilters.unconfirmed ? "selected" : ""}`}
+                onClick={() => toggleStatus("unconfirmed")}
+              >
+                <img src="/icons/unconfirmed.png" alt="" className="filter-row-icon" />
+                <span>Unconfirmed</span>
+              </button>
+
+              <button
+                type="button"
+                className={`filter-chip ${statusFilters.disputed ? "selected" : ""}`}
+                onClick={() => toggleStatus("disputed")}
+              >
+                <img src="/icons/disputed.png" alt="" className="filter-row-icon" />
+                <span>Disputed</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="filter-section filter-section-last">
+            <div className="section-title">
+              <span className="section-dot section-dot-category" />
+              Report Category
+            </div>
+
+            <div className="category-grid">
+              {CATEGORY_OPTIONS.map((category) => {
+                const isSelected = selectedCategories.includes(category.id);
+
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    className={`filter-chip ${isSelected ? "selected" : ""}`}
+                    onClick={() => toggleCategory(category.id)}
+                  >
+                    <img
+                      src={categorySidebarIconMapById[category.id] ?? "/icons/other.png"}
+                      alt=""
+                      className="filter-row-icon"
+                    />
+                    <span>{category.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <button onClick={resetAllFilters} className="reset-button">
+            Reset All Filters
+          </button>
+        </div>
       </div>
 
       <div className="search-wrapper" ref={searchWrapperRef}>
