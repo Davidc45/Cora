@@ -475,13 +475,6 @@
     transform: none;
 }
 
-.vote-detail-icon--up {
-    transform: rotate(180deg);
-}
-
-.vote-detail-icon--down {
-    transform: rotate(0deg);
-}
 
 .vote-detail-icon.is-active {
     filter: brightness(0) saturate(100%) invert(57%) sepia(92%) saturate(1800%) hue-rotate(2deg) brightness(103%) contrast(103%);

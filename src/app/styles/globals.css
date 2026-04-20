@@ -462,11 +462,11 @@ body {
 }
 
 .upvote-button {
-  transform: rotate(-90deg);
+  transform: rotate(90deg);
 }
 
 .downvote-button {
-  transform: rotate(90deg);
+  transform: rotate(-90deg);
 }
 
 .vote-button--active {
