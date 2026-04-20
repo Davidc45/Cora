@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 import PhoneVerificationModal from '@/app/components/phone-verification-modal';
+import { Avatar } from '@/app/components/client-components';
 import {
   createReportComment,
   type ReportCommentRow,
@@ -110,11 +111,16 @@ export default function ReportDetailClient({
       <ul className="comment-list">
         {comments.map((c) => (
           <li key={c.id} className="comment-item">
-            <span className="comment-author">{c.username}</span>
-            <span className="comment-time">
-              {formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
-            </span>
-            <p className="comment-body">{c.body}</p>
+            <Avatar avatar_url={c.avatar_url} className="comment-avatar" />
+            <div className="comment-content">
+              <div className="comment-meta">
+                <span className="comment-author">{c.username}</span>
+                <span className="comment-time">
+                  {formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
+                </span>
+              </div>
+              <p className="comment-body">{c.body}</p>
+            </div>
           </li>
         ))}
       </ul>

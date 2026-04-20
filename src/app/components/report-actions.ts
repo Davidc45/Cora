@@ -25,6 +25,7 @@ import {
 } from '@/lib/report-auth-errors';
 import type { ReportFlagReasonCode } from '@/lib/report-flag-reasons';
 import { postImage } from './cfhelpers';
+import { buildPublicR2Url, isPresignedUrl } from '@/lib/presigned-url';
 
 /**
  * Normalize form values: coerce `null` to empty string and trim whitespace.
@@ -281,6 +282,7 @@ export type ReportCommentRow = {
   id: string;
   body: string;
   username: string;
+  avatar_url: string | null;
   created_at: string;
 };
 
@@ -324,16 +326,37 @@ export async function getReportComments(
   const userIds = [...new Set(comments.map((c) => c.user_id))];
   const { data: profilesData } = await supabase
     .from('profiles')
-    .select('id, username')
+    .select('id, username, avatar_url, avatar_name')
     .in('id', userIds);
-  const profileMap = new Map(
-    profilesData?.map((p) => [p.id, p.username ?? 'Unknown']) ?? []
+
+  const publicBase = process.env.NEXT_PUBLIC_R2_PUBLIC_AVATAR_URL;
+  const profileMap = new Map<
+    string,
+    { username: string; avatar_url: string | null }
+  >(
+    profilesData?.map((p) => {
+      const rawUrl = typeof p.avatar_url === 'string' ? p.avatar_url.trim() : '';
+      let url: string | null = null;
+      if (rawUrl && !isPresignedUrl(rawUrl)) {
+        url = rawUrl;
+      } else {
+        url = buildPublicR2Url(publicBase, p.avatar_name);
+      }
+      return [
+        p.id,
+        {
+          username: p.username ?? 'Unknown',
+          avatar_url: url,
+        },
+      ];
+    }) ?? []
   );
 
   return comments.map((c) => ({
     id: c.id,
     body: c.body,
-    username: profileMap.get(c.user_id) ?? 'Unknown',
+    username: profileMap.get(c.user_id)?.username ?? 'Unknown',
+    avatar_url: profileMap.get(c.user_id)?.avatar_url ?? null,
     created_at: c.created_at,
   }));
 }

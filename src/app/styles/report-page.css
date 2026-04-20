@@ -386,6 +386,30 @@
     background: #fff;
     box-shadow: 0 1px 10px rgba(15, 23, 42, 0.06);
     margin-bottom: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.comment-avatar {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 100%;
+    object-fit: cover;
+}
+
+.comment-content {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.comment-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: space-between;
 }
 
 .comment-author {
@@ -400,13 +424,17 @@
     font-weight: 700;
     color: #64748b;
     font-size: 0.85rem;
+    margin-left: auto;
+    text-align: right;
 }
 
 .comment-body {
-    margin: 8px 0 0;
+    margin: 6px 0 0;
     font-family: var(--font-alexandria), ui-sans-serif, system-ui, sans-serif;
     line-height: 1.5;
     color: #334155;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 /* Detail action icons (match Figma: no blue hover, upright arrows) */
