@@ -1,9 +1,7 @@
 'use client';
 
-import { useLoadScript } from '@react-google-maps/api';
-import { useEffect, useState, useRef } from 'react';
-
-const libraries = ['places'] as ('places')[];
+import { useEffect, useRef, useState } from 'react';
+import { ensureGoogleMapsReady } from '@/lib/googleMapsLoader';
 
 function resolveGoogleMapsApiKey(): string {
   return (
@@ -20,58 +18,94 @@ function AddressFormsWithMaps({ apiKey }: { apiKey: string }) {
     county: '',
     state: '',
     country: '',
-    coordinates: [0, 0],
+    coordinates: [0, 0] as [number, number],
   });
+
+  const [mapsReady, setMapsReady] = useState(false);
+  const [mapsError, setMapsError] = useState('');
+
   const inputRef = useRef<HTMLInputElement>(null);
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: apiKey,
-    libraries,
-  });
 
-  const handlePlaceChanged = (ac: google.maps.places.Autocomplete) => {
-    const place = ac.getPlace();
-    if (place) {
-      setAddressComponents(place);
-    }
-  };
-
-  const setAddressComponents = (place: google.maps.places.PlaceResult) => {
+  const handlePlaceChanged = (place: google.maps.places.PlaceResult) => {
     const addr = place.address_components;
     if (!addr?.length) return;
+
     const lat = place.geometry?.location?.lat();
     const lng = place.geometry?.location?.lng();
-    if (lat != null && lng != null) {
-      console.log(`lat: ${lat}, lng: ${lng}`);
-    }
+
+    const getComponent = (
+      type: string,
+      format: 'short_name' | 'long_name' = 'long_name'
+    ) => {
+      return (
+        addr.find((component) => component.types.includes(type))?.[format] ?? ''
+      );
+    };
 
     setAddress((prev) => ({
       ...prev,
-      street: `${addr[0]?.short_name ?? ''} ${addr[1]?.short_name ?? ''}`.trim(),
-      city: addr[2]?.short_name ?? '',
-      state: addr[4]?.short_name ?? '',
-      country: addr[5]?.short_name ?? '',
+      street: `${getComponent('street_number', 'short_name')} ${getComponent(
+        'route',
+        'short_name'
+      )}`.trim(),
+      city: getComponent('locality', 'short_name') || getComponent('sublocality', 'short_name'),
+      county: getComponent('administrative_area_level_2', 'short_name'),
+      state: getComponent('administrative_area_level_1', 'short_name'),
+      country: getComponent('country', 'short_name'),
+      coordinates:
+        lat != null && lng != null ? [lng, lat] : prev.coordinates,
     }));
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    console.log(`setting: ${name}: ${value}`);
-    setAddress((values) => ({ ...values, [name]: value }));
+    setAddress((prev) => ({ ...prev, [name]: value }));
   };
 
   useEffect(() => {
-    if (!isLoaded || loadError) return;
+    let autocomplete: google.maps.places.Autocomplete | null = null;
 
-    const autocomplete = new google.maps.places.Autocomplete(inputRef.current!, {
-      componentRestrictions: { country: 'us' },
-    });
-    autocomplete.addListener('place_changed', () => {
-      handlePlaceChanged(autocomplete);
-    });
-  }, [isLoaded, loadError]);
+    async function loadAutocomplete() {
+      try {
+        await ensureGoogleMapsReady(
+          apiKey,
+          process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID?.trim() || undefined
+        );
 
-  if (!isLoaded) return <p>loading...</p>;
-  if (loadError) return <p>error: {loadError.message}</p>;
+        await google.maps.importLibrary('places');
+
+        if (!inputRef.current) return;
+
+        autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
+          componentRestrictions: { country: 'us' },
+          fields: ['address_components', 'geometry', 'formatted_address'],
+        });
+
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete?.getPlace();
+          if (place) {
+            handlePlaceChanged(place);
+          }
+        });
+
+        setMapsReady(true);
+      } catch (error) {
+        console.error('Autocomplete load failed:', error);
+        setMapsError('Google Maps autocomplete failed to load.');
+      }
+    }
+
+    loadAutocomplete();
+
+    return () => {
+      if (autocomplete) {
+        google.maps.event.clearInstanceListeners(autocomplete);
+      }
+    };
+  }, [apiKey]);
+
+  if (mapsError) return <p>error: {mapsError}</p>;
+  if (!mapsReady) return <p>loading...</p>;
 
   return (
     <>
@@ -80,7 +114,7 @@ function AddressFormsWithMaps({ apiKey }: { apiKey: string }) {
         name="street"
         id="street"
         ref={inputRef}
-        value={address.street || ''}
+        value={address.street}
         onChange={handleChange}
       />
 
@@ -88,7 +122,7 @@ function AddressFormsWithMaps({ apiKey }: { apiKey: string }) {
         placeholder="City"
         name="city"
         id="city"
-        value={address.city || ''}
+        value={address.city}
         onChange={handleChange}
       />
 
@@ -96,7 +130,7 @@ function AddressFormsWithMaps({ apiKey }: { apiKey: string }) {
         placeholder="State"
         name="state"
         id="state"
-        value={address.state || ''}
+        value={address.state}
         onChange={handleChange}
       />
 
@@ -104,7 +138,7 @@ function AddressFormsWithMaps({ apiKey }: { apiKey: string }) {
         placeholder="Country"
         name="country"
         id="country"
-        value={address.country || ''}
+        value={address.country}
         onChange={handleChange}
       />
     </>
@@ -113,6 +147,7 @@ function AddressFormsWithMaps({ apiKey }: { apiKey: string }) {
 
 export function AddressForms() {
   const apiKey = resolveGoogleMapsApiKey();
+
   if (!apiKey) {
     return (
       <p className="text-sm text-amber-800 dark:text-amber-200">

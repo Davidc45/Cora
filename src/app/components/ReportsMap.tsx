@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
 import type { Report } from "./mapTypes";
 import { generateReportPopup } from "./mapHelpers";
+import "../styles/map.css"; //! new 
+import { getCategoryIcon, createMarkerContent } from "./markerIcons";;
 
 import {
   CATEGORY_OPTIONS,
@@ -13,10 +15,19 @@ import {
   resolveMapStatus,
   statusToColor,
 } from "./mapHelpers";
-import { styles } from "./mapStyles";
 import { ensureGoogleMapsReady } from "@/lib/googleMapsLoader";
 
 const KNOWN_CATEGORY_IDS = new Set(CATEGORY_OPTIONS.map((c) => c.id));
+
+const categorySidebarIconMapById: Record<number, string> = {
+  1: "/icons/robbery.png",
+  2: "/icons/traffic.png",
+  3: "/icons/assault.png",
+  4: "/icons/suspicious.png",
+  5: "/icons/vandalism.png",
+  6: "/icons/hazard.png",
+  7: "/icons/other.png",
+};
 
 type ReportsMapProps = {
   reports: Report[];
@@ -31,6 +42,9 @@ export default function ReportsMap({
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const userMarkerRef = useRef<google.maps.Marker | null>(null);
   const geocoderRef = useRef<google.maps.Geocoder | null>(null);
+  const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
+  const placesServiceRef = useRef<google.maps.places.PlacesService | null>(null);
+  const searchWrapperRef = useRef<HTMLDivElement | null>(null);
 
   const googleMapsApiKey = (
     process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? ""
@@ -41,7 +55,9 @@ export default function ReportsMap({
 
   const [locationError, setLocationError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [filtersOpen, setFiltersOpen] = useState(true);
+  const [predictions, setPredictions] = useState<google.maps.places.AutocompletePrediction[]>([]);
+  const [showPredictions, setShowPredictions] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const [selectedCategories, setSelectedCategories] = useState<number[]>(
     CATEGORY_OPTIONS.map((c) => c.id)
@@ -53,32 +69,7 @@ export default function ReportsMap({
     disputed: true,
   });
 
-  const wrapperStyle = useMemo((): CSSProperties => {
-    if (!fillViewport) return styles.wrapper;
-    return {
-      ...styles.wrapper,
-      flex: 1,
-      minHeight: 0,
-      width: "100%",
-      maxWidth: "none",
-      margin: 0,
-      display: "flex",
-      flexDirection: "column",
-      position: "relative",
-      overflow: "hidden",
-    };
-  }, [fillViewport]);
-
-  const mapBlockStyle = useMemo((): CSSProperties => {
-    if (!fillViewport) return styles.map;
-    return {
-      ...styles.map,
-      flex: 1,
-      minHeight: 0,
-      height: "auto",
-      borderRadius: 0,
-    };
-  }, [fillViewport]);
+//! this is where wrapperStyle and mapBlockStyle were 
 
   const filteredReports = useMemo(() => {
     return (reports ?? []).filter((r) => {
@@ -111,7 +102,7 @@ export default function ReportsMap({
     const key = googleMapsApiKey;
     const mapId = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID?.trim() || undefined;
 
-    let markers: google.maps.Marker[] = [];
+    let markers: google.maps.marker.AdvancedMarkerElement[] = [];
     let clusterer: MarkerClusterer | null = null;
     let infoWindow: google.maps.InfoWindow | null = null;
     let hoverWindow: google.maps.InfoWindow | null = null;
@@ -133,6 +124,8 @@ export default function ReportsMap({
 
       mapInstanceRef.current = map;
       geocoderRef.current = new gmaps.maps.Geocoder();
+      autocompleteServiceRef.current = new gmaps.maps.places.AutocompleteService();
+      placesServiceRef.current = new gmaps.maps.places.PlacesService(map);
       infoWindow = new gmaps.maps.InfoWindow();
       hoverWindow = new gmaps.maps.InfoWindow();
 
@@ -140,53 +133,49 @@ export default function ReportsMap({
         const [lng, lat] = r.location_geojson!.coordinates;
         const status = resolveMapStatus(r.score, r.status);
         const color = statusToColor(status);
-        const iconPath = categoryToIcon(r.category_id);
+        const iconUrl = getCategoryIcon(r.category_id);
+        const content = createMarkerContent(iconUrl, color);
 
-        const marker = new gmaps.maps.Marker({
-          map,
-          position: { lat, lng },
-          title: r.report_title ?? undefined,
-          icon: {
-            path: gmaps.maps.SymbolPath.CIRCLE,
-            fillColor: color,
-            fillOpacity: 1,
-            strokeColor: "#ffffff",
-            strokeWeight: 2,
-            scale: 14,
-          },
-        });
-
-        const openHover = () => {
-          hoverWindow!.setContent(
-            generateReportPopup(
-              r,
-              iconPath,
-              categoryToLabel(r.category_id),
-              status,
-              formatReportDate(r.created_at)
-            )
-          );
-          hoverWindow!.open({ map, anchor: marker, shouldFocus: false });
-        };
-
-        marker.addListener("mouseover", openHover);
-        marker.addListener("mouseout", () => hoverWindow!.close());
-
-        marker.addListener("click", () => {
-          infoWindow!.setContent(
-            generateReportPopup(
-              r,
-              iconPath,
-              categoryToLabel(r.category_id),
-              status,
-              formatReportDate(r.created_at)
-            )
-          );
-          infoWindow!.open({ map, anchor: marker, shouldFocus: false });
-        });
-
-        return marker;
+        const marker = new gmaps.maps.marker.AdvancedMarkerElement({
+        map,
+        position: { lat, lng },
+        title: r.report_title ?? undefined,
+        content,
       });
+
+        
+
+      const openHover = () => {
+        hoverWindow!.setContent(
+          generateReportPopup(
+            r,
+            iconUrl,
+            categoryToLabel(r.category_id),
+            status,
+            formatReportDate(r.created_at)
+          )
+        );
+        hoverWindow!.open({ map, anchor: marker });
+      };
+
+      content.addEventListener("mouseenter", openHover);
+      content.addEventListener("mouseleave", () => hoverWindow!.close());
+
+      marker.addListener("click", () => {
+        infoWindow!.setContent(
+          generateReportPopup(
+            r,
+            iconUrl,
+            categoryToLabel(r.category_id),
+            status,
+            formatReportDate(r.created_at)
+          )
+        );
+        infoWindow!.open({ map, anchor: marker });
+      });
+
+      return marker;
+    });
 
       clusterer = new MarkerClusterer({ map, markers });
 
@@ -202,7 +191,9 @@ export default function ReportsMap({
       if (clusterer) clusterer.setMap(null);
       if (infoWindow) infoWindow.close();
       if (hoverWindow) hoverWindow.close();
-      markers.forEach((m) => m.setMap(null));
+      markers.forEach((m) => {
+        m.map = null;
+      });
       markers = [];
     };
   }, [filteredReports, googleMapsApiKey, fillViewport]);
@@ -291,183 +282,238 @@ export default function ReportsMap({
       disputed: true,
     });
   }
+  function handleSearchInput(value: string) {
+    setSearchQuery(value);
 
+    const service = autocompleteServiceRef.current;
+    if (!service || !value.trim()) {
+      setPredictions([]);
+      setShowPredictions(false);
+      return;
+    }
+
+    service.getPlacePredictions(
+      {
+        input: value,
+        componentRestrictions: { country: "us" },
+      },
+      (results) => {
+        const matches = results ?? [];
+        setPredictions(matches);
+        setShowPredictions(matches.length > 0);
+      }
+    );
+  }
+
+  function handlePredictionSelect(prediction: google.maps.places.AutocompletePrediction) {
+    const placesService = placesServiceRef.current;
+    const map = mapInstanceRef.current;
+
+    if (!placesService || !map) return;
+
+    placesService.getDetails(
+      {
+        placeId: prediction.place_id,
+        fields: ["geometry", "formatted_address", "name"],
+      },
+      (place, status) => {
+        if (
+          status === google.maps.places.PlacesServiceStatus.OK &&
+          place?.geometry?.location
+        ) {
+          map.panTo(place.geometry.location);
+          map.setZoom(14);
+
+          setSearchQuery(prediction.description);
+          setPredictions([]);
+          setShowPredictions(false);
+        }
+      }
+    );
+  }
+  useEffect(() => {
+  function handleClickOutside(event: MouseEvent) {
+    if (
+      searchWrapperRef.current &&
+      !searchWrapperRef.current.contains(event.target as Node)
+    ) {
+      setShowPredictions(false);
+    }
+  }
+
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
+
+//! temporary log to debug category icons - remove later
+console.log("CATEGORY_OPTIONS", CATEGORY_OPTIONS);
   return (
-    <div style={wrapperStyle}>
+    <div className={`reports-map-wrapper ${fillViewport ? "fill-viewport" : ""}`}>
       {mapsUnavailableMessage ? (
         <div
-          style={{
-            ...mapBlockStyle,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "#e5e5e5",
-          }}
+          className={`reports-map-canvas reports-map-unavailable ${fillViewport ? "fill-viewport" : ""}`}
           role="status"
         >
-          <p
-            style={{
-              padding: 24,
-              textAlign: "center",
-              maxWidth: 440,
-              margin: 0,
-              lineHeight: 1.5,
-              color: "#333",
-            }}
-          >
+          <p className="reports-map-unavailable-message">
             {mapsUnavailableMessage}
           </p>
         </div>
       ) : (
-        <div ref={mapRef} style={mapBlockStyle} />
+        <div ref={mapRef} className={`reports-map-canvas ${fillViewport ? "fill-viewport" : ""}`} />
       )}
 
-      <div
-        style={{
-          ...styles.filterPanel,
-          width: filtersOpen ? "280px" : "220px",
-        }}
-      >
+      <div className={`filter-sidebar ${filtersOpen ? "open" : "closed"}`}>
         <button
           onClick={() => setFiltersOpen((prev) => !prev)}
-          style={styles.filterHeaderButton}
+          className="filter-toggle-tab"
+          type="button"
         >
           <span>Filters</span>
-          <span style={{ fontSize: "22px", lineHeight: 1 }}>
-            {filtersOpen ? "⌃" : "⌄"}
+          <span className="filter-chevron">
+            {filtersOpen ? "‹" : "›"}
           </span>
         </button>
 
-        {filtersOpen && (
-          <div style={styles.filterBody}>
-            <div style={{ marginBottom: "22px" }}>
-              <div style={styles.sectionTitle}>
-                <span
-                  style={{
-                    width: "8px",
-                    height: "8px",
-                    borderRadius: "50%",
-                    background: "#F59E0B",
-                    display: "inline-block",
-                  }}
-                />
-                Timeframe
-              </div>
+        <div className="filter-sidebar-content">
+          <div className="filter-sidebar-header">Map Filters</div>
 
-              <div style={styles.optionGrid}>
-                <label><input type="radio" name="timeframe" disabled /> Daily</label>
-                <label><input type="radio" name="timeframe" disabled defaultChecked /> Weekly</label>
-                <label><input type="radio" name="timeframe" disabled /> Monthly</label>
-              </div>
+          <div className="filter-section">
+            <div className="section-title">
+              <span className="section-dot section-dot-timeframe" />
+              Report Timeline
             </div>
 
-            <div style={{ marginBottom: "22px" }}>
-              <div style={styles.sectionTitle}>
-                <span
-                  style={{
-                    width: "8px",
-                    height: "8px",
-                    borderRadius: "50%",
-                    background: "#16A34A",
-                    display: "inline-block",
-                  }}
-                />
-                Report Status
-              </div>
+            <div className="option-grid">
+              <button type="button" className="filter-chip selected" disabled>
+                <img src="/icons/timeline.png" alt="" className="filter-row-icon" />
+                <span>Past Week</span>
+              </button>
 
-              <div style={styles.optionGrid}>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={statusFilters.supported}
-                    onChange={() => toggleStatus("supported")}
-                  />{" "}
-                  Community Supported
-                </label>
+              <button type="button" className="filter-chip" disabled>
+                <img src="/icons/timeline.png" alt="" className="filter-row-icon" />
+                <span>Today</span>
+              </button>
 
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={statusFilters.unconfirmed}
-                    onChange={() => toggleStatus("unconfirmed")}
-                  />{" "}
-                  Unconfirmed
-                </label>
-
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={statusFilters.disputed}
-                    onChange={() => toggleStatus("disputed")}
-                  />{" "}
-                  Disputed
-                </label>
-              </div>
+              <button type="button" className="filter-chip" disabled>
+                <img src="/icons/timeline.png" alt="" className="filter-row-icon" />
+                <span>Past Month</span>
+              </button>
             </div>
-
-            <div style={{ marginBottom: "26px" }}>
-              <div style={styles.sectionTitle}>
-                <span
-                  style={{
-                    width: "8px",
-                    height: "8px",
-                    borderRadius: "50%",
-                    background: "#6F8F9F",
-                    display: "inline-block",
-                  }}
-                />
-                Category
-              </div>
-
-              <div style={styles.categoryGrid}>
-                {CATEGORY_OPTIONS.map((category) => (
-                  <label
-                    key={category.id}
-                    style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedCategories.includes(category.id)}
-                      onChange={() => toggleCategory(category.id)}
-                    />
-                    {category.label}
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <button onClick={resetAllFilters} style={styles.resetButton}>
-              RESET ALL FILTERS
-            </button>
           </div>
-        )}
-      </div>
 
-      <div style={styles.searchWrapper}>
-        <div style={styles.searchBar}>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleSearchLocation();
-            }}
-            placeholder="Search by location..."
-            style={styles.searchInput}
-          />
-          <button onClick={handleSearchLocation} style={styles.searchButton}>
-            Search
+          <div className="filter-section">
+            <div className="section-title">
+              <span className="section-dot section-dot-status" />
+              Report Status
+            </div>
+
+            <div className="option-grid">
+              <button
+                type="button"
+                className={`filter-chip ${statusFilters.supported ? "selected" : ""}`}
+                onClick={() => toggleStatus("supported")}
+              >
+                <img src="/icons/communitySupported.png" alt="" className="filter-row-icon" />
+                <span>Supported</span>
+              </button>
+
+              <button
+                type="button"
+                className={`filter-chip ${statusFilters.unconfirmed ? "selected" : ""}`}
+                onClick={() => toggleStatus("unconfirmed")}
+              >
+                <img src="/icons/unconfirmed.png" alt="" className="filter-row-icon" />
+                <span>Unconfirmed</span>
+              </button>
+
+              <button
+                type="button"
+                className={`filter-chip ${statusFilters.disputed ? "selected" : ""}`}
+                onClick={() => toggleStatus("disputed")}
+              >
+                <img src="/icons/disputed.png" alt="" className="filter-row-icon" />
+                <span>Disputed</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="filter-section filter-section-last">
+            <div className="section-title">
+              <span className="section-dot section-dot-category" />
+              Report Category
+            </div>
+
+            <div className="category-grid">
+              {CATEGORY_OPTIONS.map((category) => {
+                const isSelected = selectedCategories.includes(category.id);
+
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    className={`filter-chip ${isSelected ? "selected" : ""}`}
+                    onClick={() => toggleCategory(category.id)}
+                  >
+                    <img
+                      src={categorySidebarIconMapById[category.id] ?? "/icons/other.png"}
+                      alt=""
+                      className="filter-row-icon"
+                    />
+                    <span>{category.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <button onClick={resetAllFilters} className="reset-button">
+            Reset All Filters
           </button>
         </div>
       </div>
 
-      <div style={styles.currentLocationWrapper}>
-        <button onClick={handleUseCurrentLocation} style={styles.currentLocationButton}>
+      <div className="search-wrapper" ref={searchWrapperRef}>
+        <div className="search-bar">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => handleSearchInput(e.target.value)}
+            onFocus={() => {
+              if (predictions.length > 0) setShowPredictions(true);
+            }}
+            placeholder="Search by location..."
+            className="search-input"
+          />
+          <button onClick={handleSearchLocation} className="search-button">
+            Search
+          </button>
+        </div>
+        
+        {showPredictions && predictions.length > 0 && (
+          <div className="search-predictions">
+            {predictions.map((prediction) => (
+              <button
+                key={prediction.place_id}
+                type="button"
+                className="search-prediction-item"
+                onClick={() => handlePredictionSelect(prediction)}
+              >
+                {prediction.description}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="current-location-wrapper">
+        <button onClick={handleUseCurrentLocation} className="current-location-button">
           Use My Current Location
         </button>
       </div>
 
-      {locationError ? <div style={styles.errorToast}>{locationError}</div> : null}
+      {locationError ? <div className="error-toast">{locationError}</div> : null}
     </div>
   );
 }

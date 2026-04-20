@@ -1,9 +1,13 @@
 import type { CategoryOption } from "./mapTypes";
 
-export const CATEGORY_OPTIONS: CategoryOption[] = [
+export const CATEGORY_OPTIONS = [
     { id: 1, label: "Robbery" },
-    { id: 4, label: "Traffic" },
-    { id: 2, label: "Assault" },
+    { id: 2, label: "Traffic" },
+    { id: 3, label: "Assault" },
+    { id: 4, label: "Suspicious" },
+    { id: 5, label: "Vandalism" },
+    { id: 6, label: "Hazard" },
+    { id: 7, label: "Other" },
 ];
 
 export function scoreToStatus(score: number | null) {
