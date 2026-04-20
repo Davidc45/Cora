@@ -1,0 +1,129 @@
+---
+title: 'Troubleshooting common issues on Cora'
+description: 'Step-by-step fixes for report submission errors, blocked push notifications, OTP delivery problems, voting issues, map loading failures, and flag errors.'
+---
+
+If something isn't working as expected, the steps below cover the most common issues. For general questions, see the [FAQ](/help/faq).
+
+<AccordionGroup>
+  <Accordion title="Can't submit a report">
+    Report submission requires an account and a verified phone number. Work through these checks in order:
+
+    <Steps>
+      <Step title="Confirm you're signed in">
+        Check that you are logged into your Cora account. If you see a sign-in prompt, log in and try again.
+      </Step>
+      <Step title="Check phone verification">
+        If your phone is not yet verified, a prompt will appear when you try to submit. Select **Verify Now** and complete the phone verification flow before returning to your report.
+      </Step>
+      <Step title="Fill in required fields">
+        Both the **Title** and **Description** fields are required. Make sure neither is empty before submitting.
+      </Step>
+    </Steps>
+
+    <Tip>
+      If the page redirects you with an error message in the URL, it usually means phone verification is still needed. Complete verification, then navigate back to the upload page.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Push notifications are blocked">
+    If you clicked **Enable notifications** and nothing happened — or you previously denied permission — you need to update your browser settings manually.
+
+    **Chrome or Edge on desktop:**
+
+    <Steps>
+      <Step title="Open browser settings">
+        Click the three-dot menu in the upper-right corner and select **Settings**.
+      </Step>
+      <Step title="Go to Privacy & Security → Notifications">
+        Navigate to **Privacy and Security** → **Site Settings** → **Notifications**.
+      </Step>
+      <Step title="Find Cora and allow notifications">
+        Locate the Cora site in the list. Change its permission from **Block** to **Allow**.
+      </Step>
+      <Step title="Reload Cora">
+        Refresh the Cora page and try enabling notifications again.
+      </Step>
+    </Steps>
+
+    **On mobile (Android):**
+
+    <Steps>
+      <Step title="Open your device Settings">
+        Go to **Settings** → **Notifications**.
+      </Step>
+      <Step title="Find your browser app">
+        Select your browser (e.g., Chrome) from the list of apps.
+      </Step>
+      <Step title="Allow Cora notifications">
+        Locate Cora in the browser's notification list and toggle it to **Allow**.
+      </Step>
+    </Steps>
+
+    <Note>
+      Most iOS browsers do not currently support web push notifications. If you are on an iPhone or iPad and notifications are unavailable, this is a browser limitation rather than an account issue.
+    </Note>
+  </Accordion>
+
+  <Accordion title="OTP code is not arriving">
+    If you requested a verification code but haven't received an SMS, try these steps:
+
+    <Steps>
+      <Step title="Check your phone number">
+        Make sure you entered the correct phone number, including the area code. The field accepts formats like `(XXX) XXX-XXXX` or `+1XXXXXXXXXX`.
+      </Step>
+      <Step title="Wait for the cooldown">
+        There is a 10-minute cooldown between resend requests. The timer is shown on screen. Wait until it reaches zero before requesting a new code.
+      </Step>
+      <Step title="Request a new code">
+        Once the cooldown expires, click **send code again** and enter the new code. Do not use the earlier code after requesting a new one.
+      </Step>
+      <Step title="Check with your carrier">
+        Some carriers block short-code SMS messages. If codes consistently don't arrive, contact your carrier to confirm that SMS delivery from short codes is enabled on your account.
+      </Step>
+    </Steps>
+  </Accordion>
+
+  <Accordion title="Vote or comment is not working">
+    Voting and commenting require a verified phone number.
+
+    <Steps>
+      <Step title="Verify your phone">
+        Go to your account settings and complete phone verification if you haven't done so already.
+      </Step>
+      <Step title="Refresh the page">
+        If you verified your phone recently in the same session, the page may still be showing your old session state. Refresh the page and try the action again.
+      </Step>
+    </Steps>
+
+    <Tip>
+      A full page reload — rather than using the browser's back button — ensures the latest verification status is loaded.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Map is not loading">
+    If the Interactive Map shows a blank area or fails to render:
+
+    <Steps>
+      <Step title="Check your internet connection">
+        The map requires a live internet connection to load tiles and report data. Confirm you are online and try again.
+      </Step>
+      <Step title="Refresh the page">
+        A hard refresh (Ctrl+Shift+R on Windows/Linux, Cmd+Shift+R on Mac) clears the cache and reloads all map resources.
+      </Step>
+      <Step title="Try a different browser">
+        Older browsers may not fully support the map viewer. Try opening Cora in an up-to-date version of Chrome, Edge, Firefox, or Safari.
+      </Step>
+    </Steps>
+
+    <Note>
+      If the map area shows a blank grey box with no pins, try refreshing. If the problem persists, contact the Cora team.
+    </Note>
+  </Accordion>
+
+  <Accordion title='Flag submission shows "You have already reported this"'>
+    Each user can only flag a given report once. If you see this error, your flag was already submitted for that report and is under moderation review.
+
+    You do not need to submit another flag. The moderation team will review your original submission.
+  </Accordion>
+</AccordionGroup>

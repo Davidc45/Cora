@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getReportCommentCounts } from '@/app/components/report-actions';
 import ExploreListClient from './report-list-client';
 import { getImages } from '@/app/components/cfhelpers';
-import Filters from './filter';
+
 
 export const dynamic = 'force-dynamic';
 

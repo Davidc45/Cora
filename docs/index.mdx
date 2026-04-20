@@ -1,97 +1,57 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Cora documentation"
+description: "User guides and developer notes for Cora — a safety-first community reporting platform for Orange County."
 ---
 
-## Setting up
+## About Cora
 
-Get your documentation site up and running in minutes.
+Cora helps residents share and explore community safety reports: a public **reports** feed, an **interactive map**, and tools to submit incidents when you are signed in and verified.
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
+<Card title="New to Cora?" icon="rocket" href="/quickstart" horizontal>
+  Create an account, verify your phone, and learn how to submit your first report.
 </Card>
 
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
+## User guide
 
 <Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+  <Card title="Sign up & sign in" icon="user-plus" href="/account/sign-up">
+    Email, password, Google, and password reset.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Phone verification" icon="mobile" href="/account/phone-verification">
+    Why it exists and how to complete OTP on the verify-phone page.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Reports" icon="newspaper" href="/reports/browsing">
+    Browsing the feed, submitting, voting, comments, and flagging.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Interactive map" icon="map" href="/map/overview">
+    Pins, filters, and search — no account required to browse.
+  </Card>
+  <Card title="FAQ & help" icon="circle-question" href="/help/faq">
+    Common questions and troubleshooting.
+  </Card>
+  <Card title="Push notifications" icon="bell" href="/account/notifications">
+    Optional browser notifications for report activity.
   </Card>
 </Columns>
 
-## Create beautiful pages
+## Developers & this documentation site
 
-Everything you need to create world-class documentation.
+The **Next.js** app for Cora lives in the repository root. This **Mintlify** site lives under `docs/` and ships separately (e.g. Mintlify Cloud).
 
 <Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+  <Card title="Run the Cora app" icon="terminal" href="/development">
+    Clone, configure `.env.local`, and `npm run dev`.
   </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
+  <Card title="Technology stack" icon="layer-group" href="/tech-stack">
+    Supabase, Cloudflare, Google Maps, Vercel, and how they connect in code.
   </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
+  <Card title="Preview these docs" icon="book" href="/development#preview-this-documentation-site">
+    Install the Mintlify CLI and run `mint dev` from `docs/`.
   </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
+  <Card title="Style this docs site" icon="palette" href="/essentials/settings">
+    `docs/docs.json` controls name, colors, fonts, and navigation for Mintlify only.
+  </Card>
+  <Card title="API reference (sample)" icon="code" href="/api-reference/introduction">
+    Starter OpenAPI examples — replace when your HTTP API is documented.
   </Card>
 </Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>

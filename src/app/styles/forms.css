@@ -1,12 +1,3 @@
-.signup-container, .login-container {
-    display: flex;
-    flex-direction: column;
-    width: 300px;
-    margin: auto;
-    background-color: var(--secondary-color);
-    padding: 55px;
-}
-
 label {
     padding: 10px 0;
 }
@@ -69,44 +60,725 @@ input:focus {
     width: 20px;
 }
 
-.google-login {
-    cursor: pointer;
-    border: solid;
-    border-radius: 10px;
-    padding: 10px 50px;
-    width: 50%;
+/* Google “G” badge (Sign up / Sign in) */
+.google-oauth-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background-color: #fff;
+    flex-shrink: 0;
+}
+
+.google-oauth-mark__svg {
+    display: block;
+    width: 18px;
+    height: 18px;
+}
+
+/* —— Sign up / Sign in: split layout (shared tokens + form chrome on .login-page__*) —— */
+.signup-page,
+.login-page {
+    --signup-hero-bg: #1a2634;
+    --signup-ink: #111827;
+    --signup-muted: #64748b;
+    --signup-border: #e5e7eb;
+    --signup-orange: #f27f0d;
+    --signup-orange-hover: #dd7200;
+    --signup-link-green: #15803d;
+    --signup-feature-orange: #f27f0d;
+    --signup-feature-green: #22c55e;
+    --signup-feature-blue: #7dd3fc;
+
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 0;
+    font-family: var(--font-alexandria), ui-sans-serif, system-ui, sans-serif;
+}
+
+.signup-page__hero {
+    background: var(--signup-hero-bg);
+    color: #fff;
+    flex: 0 0 auto;
+    width: 100%;
+}
+
+.signup-page__hero-inner {
+    max-width: 560px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    /* Tighter top padding so hero art stays in the first viewport */
+    padding: clamp(0.5rem, 2vw, 1rem) clamp(1.25rem, 5vw, 2.5rem) clamp(1.25rem, 4vw, 2rem);
+}
+
+/* Sign in: light hero column — heading + art centered as a block; art scales with form column */
+.login-page__hero {
+    background: #f4f1ea;
+    color: #1a2634;
+    flex: 0 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.login-page__hero-inner {
+    width: 100%;
+    max-width: none;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    margin: 20px auto;
-    background-color: rgb(109, 109, 109);
-    color: white;
-    border-color: black;
+    gap: clamp(0.85rem, 2.5dvh, 1.5rem);
+    padding: clamp(1.25rem, 4dvh, 2rem) clamp(1.25rem, 5vw, 2.5rem)
+        clamp(1rem, 3dvh, 1.75rem);
+    box-sizing: border-box;
+    /* Mobile: compact stack under navbar; desktop fills column in 900px block */
+    flex: 0 1 auto;
+    min-height: 0;
 }
 
-.google-login:hover {
-    background-color: rgb(62, 62, 62);
+.login-page__welcome-title {
+    margin: 0;
+    font-family: var(--font-gantari), ui-sans-serif, system-ui, sans-serif;
+    font-size: clamp(1.65rem, 5vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1.15;
+    color: #1a2634;
+    text-align: center;
+    width: 100%;
+    max-width: min(24ch, 100%);
 }
 
-.login-button {
-    border: solid;
-    width: 40%;
-    margin: 20px auto;
-    padding: 10px;
-    border-radius: 15px;
+.signup-page__welcome-title {
+    margin: clamp(0.75rem, 2.5vw, 1.25rem) 0 0.5rem;
+    font-family: var(--font-gantari), ui-sans-serif, system-ui, sans-serif;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 700;
+    line-height: 1.2;
+    color: #fff;
 }
 
-.or {
+.signup-page__welcome-line {
+    display: inline-flex;
+    align-items: baseline;
+    flex-wrap: nowrap;
+    gap: 0;
+    font-size: inherit;
+}
+
+/* Favicon = period: scale with heading (em), clamp px so mobile/desktop stay dot-sized */
+.signup-page__welcome-period {
+    display: inline-block;
+    font-size: inherit;
+    width: 0.34em;
+    height: 0.34em;
+    min-width: 6px;
+    min-height: 6px;
+    max-width: 15px;
+    max-height: 15px;
+    margin: 0 0 0 0.02em;
+    flex-shrink: 0;
+    align-self: baseline;
+    object-fit: contain;
+    vertical-align: baseline;
+    position: relative;
+    top: 0.07em;
+}
+
+.signup-page__welcome-lede {
+    margin: 0 0 clamp(0.65rem, 2vw, 1rem);
+    font-size: clamp(0.9rem, 2vw, 1.02rem);
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.signup-page__features {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.65rem, 2vw, 1rem);
+}
+
+.signup-page__feature {
+    display: flex;
+    gap: 0.85rem;
+    align-items: flex-start;
+    padding: 0 0 0 0.75rem;
+    border-left: 4px solid transparent;
+}
+
+.signup-page__feature--orange {
+    border-left-color: var(--signup-feature-orange);
+}
+
+.signup-page__feature--green {
+    border-left-color: var(--signup-feature-green);
+}
+
+.signup-page__feature--blue {
+    border-left-color: var(--signup-feature-blue);
+}
+
+.signup-page__feature-icon-wrap {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 40px display from higher-res source + whole pixels avoids soft edges (see unoptimized on Image) */
+.signup-page__feature-icon-img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    flex-shrink: 0;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+.signup-page__feature-title {
+    margin: 0 0 0.25rem;
+    font-family: var(--font-gantari), ui-sans-serif, system-ui, sans-serif;
+    /* Mobile-first: scales with narrow viewports; desktop reset in 900px block */
+    font-size: clamp(0.86rem, 3.4vw, 0.95rem);
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.25;
+}
+
+.signup-page__feature-text {
+    margin: 0;
+    /* Slightly smaller on phones; grows smoothly toward tablet */
+    font-size: clamp(0.72rem, 3.05vw, 0.86rem);
+    line-height: 1.42;
+    color: rgba(255, 255, 255, 0.78);
+}
+
+/* Sits directly under Instant Access; compact so it stays in first viewport */
+.signup-page__hero-art {
+    margin: 0.35rem 0 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-page__hero-art {
+    margin: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 0 1 auto;
+    min-height: 0;
+}
+
+.signup-page__hero-img {
+    width: 100%;
+    max-width: min(100%, 28rem);
+    height: auto;
+    max-height: min(26dvh, 200px);
+    object-fit: contain;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+.login-page__hero-img {
+    width: 100%;
+    max-width: min(100%, 42rem);
+    height: auto;
+    /* Mobile-first: larger art vs stacked form; desktop cap in 900px block */
+    max-height: min(52dvh, 460px);
+    object-fit: contain;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+.signup-page__panel,
+.login-page__panel {
+    flex: 1 1 auto;
+    width: 100%;
+    background: #fff;
+    /* Dense layout: keep full form in first viewport (esp. desktop split column) */
+    padding: clamp(0.65rem, 2.5dvh, 1rem) clamp(1.35rem, 5.5vw, 2.25rem) clamp(0.65rem, 2dvh, 1rem);
+    max-width: 640px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.signup-page__form,
+.login-page__form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.signup-page__form-title,
+.login-page__form-title {
+    margin: 0 0 0.2rem;
+    font-family: var(--font-gantari), ui-sans-serif, system-ui, sans-serif;
+    font-size: clamp(1.2rem, 2.8vw, 1.45rem);
+    font-weight: 700;
+    color: var(--signup-ink);
+    text-align: center;
+    line-height: 1.15;
+}
+
+.signup-page__form-subtitle,
+.login-page__form-subtitle {
+    margin: 0 0 clamp(0.5rem, 1.8dvh, 0.75rem);
+    text-align: center;
+    font-size: clamp(0.78rem, 1.6vw, 0.88rem);
+    color: var(--signup-muted);
+    line-height: 1.35;
+}
+
+.signup-page__field,
+.login-page__field {
+    margin-bottom: clamp(0.35rem, 1.2dvh, 0.55rem);
+}
+
+.signup-page__label-row,
+.login-page__label-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.4rem;
+    margin-bottom: 0.2rem;
+}
+
+.signup-page__label,
+.login-page__label {
+    display: block;
+    padding: 0;
+    margin: 0;
+    font-family: var(--font-gantari), ui-sans-serif, system-ui, sans-serif;
+    font-size: clamp(0.8rem, 1.5vw, 0.88rem);
+    font-weight: 700;
+    color: var(--signup-ink);
+}
+
+.signup-page__label-hint,
+.login-page__label-hint {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--signup-muted);
+}
+
+.signup-page .signup-page__input,
+.login-page .login-page__input {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0;
+    padding: clamp(0.45rem, 1.4dvh, 0.55rem) clamp(0.55rem, 1.5vw, 0.65rem);
+    font-size: clamp(0.85rem, 1.6vw, 0.92rem);
+    line-height: 1.35;
+    border: 1px solid var(--signup-border);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--signup-ink);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.signup-page .signup-page__input::placeholder,
+.login-page .login-page__input::placeholder {
+    color: #94a3b8;
+}
+
+.signup-page .signup-page__input:focus,
+.login-page .login-page__input:focus {
+    outline: none;
+    border-color: var(--signup-orange);
+    box-shadow: 0 0 0 3px rgba(242, 127, 13, 0.2);
+}
+
+.signup-page__password-block,
+.login-page__password-block {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+}
+
+.signup-page .signup-page__input--with-toggle,
+.login-page .login-page__input--with-toggle {
+    flex: 1 1 auto;
+    min-width: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: none;
+}
+
+.signup-page__eye,
+.login-page__eye {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    min-height: 2.25rem;
+    padding: 0;
+    border: 1px solid var(--signup-border);
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+    background: #fff;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.signup-page__eye:hover,
+.login-page__eye:hover {
+    background: #f8fafc;
+}
+
+.signup-page__eye:focus-visible,
+.login-page__eye:focus-visible {
+    outline: 2px solid var(--signup-orange);
+    outline-offset: 2px;
+}
+
+.signup-page__eye-img,
+.login-page__eye-img {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+
+.signup-page__turnstile,
+.login-page__turnstile {
+    margin: clamp(0.15rem, 1dvh, 0.35rem) 0 clamp(0.25rem, 1dvh, 0.45rem);
+    width: 100%;
+    align-self: stretch;
+    min-height: 0;
+}
+
+/* Match text fields: full row width; Turnstile `flexible` fills this container */
+.signup-page__turnstile .turnstile-field-root,
+.login-page__turnstile .turnstile-field-root {
+    width: 100%;
+    display: block;
+    line-height: 0;
+}
+
+.signup-page__turnstile .turnstile-field-root iframe,
+.login-page__turnstile .turnstile-field-root iframe {
+    width: 100% !important;
+}
+
+.signup-page__submit,
+.login-page__submit {
+    display: block;
+    width: 100%;
+    min-height: 2.35rem;
+    margin: 0.15rem 0 0;
+    padding: 0.45rem 0.85rem;
+    font-family: var(--font-alexandria), ui-sans-serif, system-ui, sans-serif;
+    font-size: clamp(0.85rem, 1.6vw, 0.92rem);
+    font-weight: 700;
+    color: #fff;
+    background: var(--signup-orange);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(242, 127, 13, 0.3);
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.signup-page__submit:hover:not(:disabled),
+.login-page__submit:hover:not(:disabled) {
+    background: var(--signup-orange-hover);
+    box-shadow: 0 6px 18px rgba(242, 127, 13, 0.4);
+}
+
+.signup-page__submit:disabled,
+.login-page__submit:disabled {
+    opacity: 0.75;
+    cursor: not-allowed;
+}
+
+.signup-page__submit--blocked {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.55;
+    pointer-events: none;
+    box-shadow: none;
+}
+
+.signup-page__mismatch {
+    margin: 0 0 0.25rem;
+    font-size: 0.78rem;
+    color: #b45309;
+    text-align: center;
+    line-height: 1.3;
+}
+
+.signup-page__success {
+    margin: 0.4rem 0 0;
+    padding: 0.45rem 0.65rem;
+    border-radius: 6px;
+    background: rgba(22, 163, 74, 0.1);
+    color: #166534;
+    font-size: 0.8rem;
+    text-align: center;
+    line-height: 1.35;
+}
+
+.signup-page .error,
+.login-page .error {
+    margin-top: 0.4rem;
+    border-radius: 6px;
+    border: 1px solid rgba(185, 28, 28, 0.35);
+    font-size: 0.8rem;
+    padding: 0.4rem 0.5rem;
+}
+
+.signup-page__or,
+.login-page__or {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: clamp(0.45rem, 1.5dvh, 0.65rem) 0 clamp(0.4rem, 1.4dvh, 0.55rem);
+    width: 100%;
+}
+
+.signup-page__or-line,
+.login-page__or-line {
+    flex: 1 1 auto;
+    height: 1px;
+    background: var(--signup-border);
+}
+
+.signup-page__or-text,
+.login-page__or-text {
+    flex: 0 0 auto;
+    font-size: 1rem;
+    color: black;
+    text-transform: lowercase;
+    font-weight: 700;
+    margin: 0 15px;
+}
+
+.signup-page__google,
+.login-page__google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    width: 100%;
+    min-height: 2.35rem;
+    margin: 0;
+    padding: 0.45rem 0.75rem;
+    font-family: var(--font-alexandria), ui-sans-serif, system-ui, sans-serif;
+    font-size: clamp(0.85rem, 1.6vw, 0.92rem);
+    font-weight: 700;
+    color: #fff;
+    background: var(--signup-ink);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.signup-page__google:hover,
+.login-page__google:hover {
+    background: #1e293b;
+    box-shadow: 0 4px 12px rgba(17, 24, 39, 0.2);
+}
+
+.signup-page__google:focus-visible,
+.login-page__google:focus-visible {
+    outline: 2px solid var(--signup-orange);
+    outline-offset: 2px;
+}
+
+.signup-page__google-form,
+.login-page__google-form {
+    display: block;
+    width: 100%;
+    margin: 0;
+}
+
+.signup-page__footer,
+.login-page__footer {
+    margin-top: clamp(0.55rem, 2dvh, 0.85rem);
     text-align: center;
 }
 
-.signup-with-google {
-    border: solid;
-    padding: 10px 0;
-    cursor: pointer;
+.signup-page__footer-line,
+.login-page__footer-line {
+    margin: 0 0 0.35rem;
+    font-size: clamp(0.78rem, 1.5vw, 0.85rem);
+    color: var(--signup-ink);
+    line-height: 1.35;
 }
 
+.signup-page__footer-link,
+.login-page__footer-link {
+    font-weight: 700;
+    color: var(--signup-link-green);
+    text-decoration: none;
+}
+
+.signup-page__footer-link:hover,
+.login-page__footer-link:hover {
+    text-decoration: underline;
+}
+
+.signup-page__home-link,
+.login-page__home-link {
+    display: inline-block;
+    font-size: clamp(0.78rem, 1.5vw, 0.85rem);
+    font-weight: 600;
+    color: var(--signup-ink);
+    text-decoration: none;
+    line-height: 1.35;
+}
+
+.signup-page__home-link:hover,
+.login-page__home-link:hover {
+    color: var(--signup-orange);
+}
+
+.login-page__forgot {
+    display: inline-block;
+    margin: 0 0 clamp(0.35rem, 1.2dvh, 0.5rem);
+    font-size: clamp(0.78rem, 1.5vw, 0.85rem);
+    font-weight: 600;
+    color: var(--signup-orange);
+    text-decoration: none;
+}
+
+.login-page__forgot:hover {
+    text-decoration: underline;
+    color: var(--signup-orange-hover);
+}
+
+/* Shorter laptop / zoomed windows: shave a bit more vertical space */
+@media (min-width: 900px) and (max-height: 780px) {
+    .signup-page__panel,
+    .login-page__panel {
+        padding: clamp(0.35rem, 1.5dvh, 0.65rem) clamp(1.2rem, 4vw, 1.85rem);
+    }
+
+    .signup-page__form-subtitle,
+    .login-page__form-subtitle {
+        margin-bottom: clamp(0.35rem, 1.2dvh, 0.5rem);
+    }
+
+    .signup-page__field,
+    .login-page__field {
+        margin-bottom: clamp(0.28rem, 1dvh, 0.42rem);
+    }
+}
+
+@media (min-width: 900px) {
+    .signup-page,
+    .login-page {
+        flex-direction: row;
+        align-items: stretch;
+        min-height: calc(100dvh - 64px);
+    }
+
+    .signup-page__hero {
+        flex: 1 1 50%;
+        max-width: 50%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .login-page__hero {
+        flex: 1 1 50%;
+        max-width: 50%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .signup-page__hero-inner {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        margin: 0;
+        max-width: none;
+        padding: clamp(0.75rem, 2vw, 1.25rem) clamp(2rem, 5vw, 4rem) clamp(2rem, 4vw, 3.5rem);
+    }
+
+    .login-page__hero-inner {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        max-width: none;
+        min-height: 0;
+        height: 100%;
+        padding: clamp(1.25rem, 3vh, 2.5rem) clamp(1.5rem, 4vw, 3rem);
+        gap: clamp(1rem, 2.5vh, 2rem);
+    }
+
+    .login-page__welcome-title {
+        font-size: clamp(1.85rem, 2.8vw, 2.5rem);
+    }
+
+    .signup-page__hero-art {
+        margin-top: 5rem;
+    }
+
+    .login-page__hero-art {
+        margin-top: 0;
+        flex: 0 1 auto;
+        width: 100%;
+        max-width: min(100%, 48rem);
+    }
+
+    .signup-page__hero-img {
+        max-height: min(30dvh, 260px);
+    }
+
+    .login-page__hero-img {
+        max-width: 100%;
+        max-height: min(calc(100dvh - 64px - 9rem), min(58vw, 640px));
+        width: auto;
+        height: auto;
+    }
+
+    .signup-page__feature-title {
+        font-size: 1rem;
+        line-height: 1.2;
+    }
+
+    .signup-page__feature-text {
+        font-size: clamp(0.82rem, 1.15vw, 0.92rem);
+        line-height: 1.45;
+    }
+
+    .signup-page__panel,
+    .login-page__panel {
+        flex: 1 1 50%;
+        max-width: 50%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        margin: 0;
+        padding: clamp(0.5rem, 2dvh, 1rem) clamp(1.5rem, 8vw, 8rem) clamp(0.5rem, 2dvh, 1rem);
+    }
+}
+
+/* Account page avatar size; crop matches navbar via `.cora-user-avatar-photo` on the same img. */
 .pfp {
-    border-radius: 100%;
-    border: solid;
-    border-color: black;
-    padding: 10px;
+    width: 100px;
+    height: 100px;
 }

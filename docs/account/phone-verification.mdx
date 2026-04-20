@@ -1,0 +1,51 @@
+---
+title: "Verify your phone number"
+description: "Cora requires a verified phone number before you can submit reports, vote, or comment. OTP flow lives on /pages/verify-phone."
+---
+
+Before you can **submit reports**, **vote**, or **comment**, your profile must have `phone_verified` set in Supabase (done automatically after a successful OTP). **Browsing** the reports feed and **interactive map** does not require an account or verification.
+
+<Warning>
+  If you are signed in but not verified, the upload page shows an **authorization** reminder with **Authorize Now** (to `/pages/verify-phone`) or **Authorize Later** (dismiss for this session). You cannot use the report form until you complete verification.
+</Warning>
+
+## Where to verify
+
+Phone verification happens on the dedicated page:
+
+**[`/pages/verify-phone`](/pages/verify-phone)**
+
+You can open it from:
+
+- **Authorize Now** on the in-app modal when you try to upload without being verified, or  
+- Your browser’s address bar: go to `/pages/verify-phone` while signed in.
+
+<Note>
+  The **Account** page (`/pages/account`) is for your profile, avatar, and your reports list. The **SMS + OTP** inputs are on **`/pages/verify-phone`**, not embedded in the account form.
+</Note>
+
+## Steps on the verify-phone page
+
+<Steps>
+  <Step title="Enter your phone number">
+    Type your mobile number and click **Send Code**.
+  </Step>
+  <Step title="Enter the 6-digit code">
+    Cora sends a one-time code via SMS. Enter each digit in the six boxes.
+  </Step>
+  <Step title="Submit">
+    Click **Submit**. On success you are sent to **Account** with a confirmation query flag, and the app refreshes your session so the navbar and upload page see you as verified.
+  </Step>
+</Steps>
+
+<Tip>
+  For US numbers, the client normalizes many common formats to E.164 (for example, 10 digits get a `+1` prefix). For international numbers, include the country code.
+</Tip>
+
+## Resend cooldown
+
+Respecting `verify-phone-form.tsx`, the cooldown between **Send code** requests is **600 seconds (10 minutes)**. A timer shows when you can request again.
+
+## Guests on the upload page
+
+If you are **not signed in** and open **Make a Report**, you see a **different** modal (sign-in variant): **Not now** or **Sign in** (to login with `next=/pages/upload`). That is separate from phone verification.

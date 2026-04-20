@@ -2,12 +2,23 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "Cora",
+  "description": "Safety-first community platform for Orange County residents. Built by locals, for locals.",
   "colors": {
-  "primary": "#F27F0D",
-  "light": "#00AF54",
-  "dark": "#E07000"
-},
-  "favicon": "/favicon.svg",
+    "primary": "#F27F0D",
+    "light": "#FF9A35",
+    "dark": "#DD7D00"
+  },
+  "appearance": {
+    "default": "light"
+  },
+  "fonts": {
+    "family": "Alexandria",
+    "heading": {
+      "family": "Gantari",
+      "weight": 700
+    }
+  },
+  "favicon": "/favicon.ico",
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
@@ -15,8 +26,8 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:corafyi@gmail.com"
+        "label": "Contact",
+        "href": "mailto:corafyi@gmail.com?subject=Cora"
       }
     ],
     "primary": {
@@ -28,74 +39,62 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "User Guide",
+        "tab": "User guide",
         "groups": [
           {
             "group": "Getting started",
+            "pages": ["index", "quickstart"]
+          },
+          {
+            "group": "Account",
             "pages": [
-              "user/introduction",
-              "user/quickstart"
+              "account/sign-up",
+              "account/phone-verification",
+              "account/notifications"
             ]
           },
           {
-            "group": "Submitting reports",
+            "group": "Reports",
             "pages": [
-              "user/how-to-report",
-              "user/report-categories",
-              "user/location-accuracy"
+              "reports/browsing",
+              "reports/submitting",
+              "reports/voting-and-comments",
+              "reports/flagging"
             ]
           },
           {
-            "group": "Your account",
-            "pages": [
-              "user/creating-an-account",
-              "user/privacy-and-data"
-            ]
+            "group": "Map",
+            "pages": ["map/overview"]
           },
           {
-            "group": "Support",
-            "pages": [
-              "user/faq"
-            ]
+            "group": "Help",
+            "pages": ["help/faq", "help/troubleshooting"]
           }
         ]
       },
       {
-        "tab": "Developer Docs",
+        "tab": "Developers & docs site",
+        "groups": [
+          {
+            "group": "Cora app & repo",
+            "pages": ["development", "tech-stack"]
+          }
+        ]
+      },
+      {
+        "tab": "API reference",
         "groups": [
           {
             "group": "Overview",
-            "pages": [
-              "dev/introduction",
-              "dev/tech-stack",
-              "dev/architecture"
-            ]
+            "pages": ["api-reference/introduction"]
           },
           {
-            "group": "Setup",
+            "group": "Endpoints",
             "pages": [
-              "dev/environment-setup",
-              "dev/environment-variables"
-            ]
-          },
-          {
-            "group": "Database",
-            "pages": [
-              "dev/supabase-schema",
-              "dev/postgis-setup"
-            ]
-          },
-          {
-            "group": "Auth",
-            "pages": [
-              "dev/google-oauth",
-              "dev/twilio-verify"
-            ]
-          },
-          {
-            "group": "Deployment",
-            "pages": [
-              "dev/deployment-guide"
+              "api-reference/endpoint/get",
+              "api-reference/endpoint/create",
+              "api-reference/endpoint/delete",
+              "api-reference/endpoint/webhook"
             ]
           }
         ]
@@ -106,22 +105,26 @@
         {
           "anchor": "GitHub",
           "href": "https://github.com/Davidc45/Cora",
-          "icon": "github"
+          "icon": "github",
+          "color": {
+            "light": "#111827",
+            "dark": "#F27F0D"
+          }
         },
         {
           "anchor": "Report an issue",
-          "href": "mailto:corafyi@gmail.com",
-          "icon": "circle-exclamation"
+          "href": "mailto:corafyi@gmail.com?subject=Cora%20docs",
+          "icon": "circle-exclamation",
+          "color": {
+            "light": "#F27F0D",
+            "dark": "#FF9A35"
+          }
         }
       ]
     }
   },
   "contextual": {
-    "options": [
-      "copy",
-      "view",
-      "claude"
-    ]
+    "options": ["copy", "view", "claude"]
   },
   "footer": {
     "socials": {

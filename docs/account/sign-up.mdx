@@ -1,0 +1,82 @@
+---
+title: "Create an Account and Sign In to Cora"
+description: "Set up your free Cora account using email and password or Google, then learn how to log in and recover your password if you forget it."
+---
+
+You need a free Cora account to submit reports, vote, and comment. You can create one in under a minute using an email address and password, or by signing in with your existing Google account. Once your account is active, use the same method to log in each time. If you ever forget your password, Cora can send you a reset link by email.
+
+## Create your account
+
+<Tabs>
+  <Tab title="Email & password">
+    <Steps>
+      <Step title="Open the sign-up page">
+        Go to **`/pages/signup`**, or open **`/pages/login`** and use **Sign-up here** in the footer. The header shows **Sign In** when logged out.
+      </Step>
+      <Step title="Fill in the form">
+        Enter the following details:
+
+        - **Username** — the name other members will see. Must be unique.
+        - **Email** — a valid email address you can access.
+        - **Password** — enter a password, then re-enter the same password in **Confirm Password**. The **Sign up** button stays disabled until both fields match.
+      </Step>
+      <Step title="Complete the security check">
+        A Cloudflare security check appears at the bottom of the form. Complete it before clicking **Sign up**.
+      </Step>
+      <Step title="Check your inbox">
+        After submitting, Cora sends a confirmation link to the email address you provided. Open the email and click the link to activate your account. You will not be able to sign in until you confirm your email.
+      </Step>
+    </Steps>
+
+    <Note>
+      Your username must be at least 3 characters long. Usernames are unique — if the one you want is taken, you will see an error and can try a different one.
+    </Note>
+  </Tab>
+  <Tab title="Google">
+    <Steps>
+      <Step title="Open the sign-up page">
+        Go to **`/pages/signup`**, or use **Sign-up here** from the login page as above.
+      </Step>
+      <Step title="Sign up with Google">
+        Use **Sign up with google** at the bottom of the form (keyboard-accessible control). You will be redirected to Google to choose or confirm your account.
+      </Step>
+      <Step title="Return to Cora">
+        After authorizing, Google redirects you back to Cora and your account is ready to use. No email confirmation step is required.
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## Log in
+
+<Tabs>
+  <Tab title="Email & password">
+    Open **`/pages/login`**, enter your email and password, then click **Login**. Use the show/hide toggle next to the password field if you want to confirm what you are typing.
+  </Tab>
+  <Tab title="Google">
+    On **`/pages/login`**, use the dedicated **Sign in with Google** form below the email/password fields and click its **Sign in with Google** button. Choose the same Google account you used to sign up.
+  </Tab>
+</Tabs>
+
+## Reset your password
+
+If you forget your password, you can request a reset link by email.
+
+<Steps>
+  <Step title="Go to the forgot password page">
+    On the **Log In** page, click **Forgot Password?** below the password field.
+  </Step>
+  <Step title="Enter your email">
+    Type in the email address associated with your Cora account and click **Send Email**.
+  </Step>
+  <Step title="Open the reset link">
+    Check your inbox for an email from Cora. Click the link inside — it will take you to the password reset page.
+  </Step>
+  <Step title="Set a new password">
+    Enter your new password, confirm it in the second field, then click **Reset Password**. Once complete, you will be redirected to the login page and can sign in with your new password.
+  </Step>
+</Steps>
+
+<Note>
+  Cora sends the reset email regardless of whether the address is registered, so you will not see a confirmation that the email exists. If the email does not arrive, check your spam folder or try again.
+</Note>
