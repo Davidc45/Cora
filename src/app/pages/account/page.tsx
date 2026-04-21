@@ -53,4 +53,50 @@ export default async function Account() {
       <UpdateAccount user={profile} />
     </div>
   );
+
+  return (
+    <div className="account-page">
+      <VerifiedToast />
+
+      <div className="account-page__back">
+        <a href="/" className="account-page__back-btn">← Go back</a>
+      </div>
+
+      <div className="account-page__card">
+        <h2 className="account-page__title">Account Details</h2>
+        <p className="account-page__subtitle">
+          Update your profile information and notification preference.
+        </p>
+
+        <div className="account-page__profile">
+          <div className="account-page__avatar" />
+          <h3 className="account-page__username">{username}</h3>
+        </div>
+
+        <div className="account-page__section">
+          <label className="account-page__label">Username</label>
+          <UpdateAccount user={profile} />
+        </div>
+
+        <div className="account-page__section">
+          <label className="account-page__label">Alert Preferences</label>
+          <div className="account-page__toggle">
+            <span>Push Notifications</span>
+            <NotificationToggle />
+          </div>
+        </div>
+
+        <div className="account-page__actions">
+          <a href="/pages/login" className="account-page__signout">
+            Sign Out
+          </a>
+        </div>
+      </div>
+
+      <div className="account-page__reports">
+        <h3>Your Reports</h3>
+        <Reports reports={report} images={images} inAccount={true} />
+      </div>
+    </div>
+  );
 }
