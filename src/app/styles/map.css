@@ -1,3 +1,120 @@
+/* global responsive */
+* {
+    box-sizing: border-box;
+}
+
+img, video, canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+/* pop up styling*/
+.gm-style .gm-style-iw-d {
+    overflow: hidden !important;
+    max-height: none !important;
+}
+
+.gm-style .gm-style-iw-c {
+    padding: 0 !important;
+    max-width: none !important;
+}
+.popup {
+    font-family: Inter, Arial, sans-serif;
+    width: min(320px, 85vw);
+    max-width: 85vw;
+    background: white;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+    overflow: hidden;
+}
+
+.popup-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.popup-icon-wrap {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #E6EDF3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.popup-icon {
+    width: 18px;
+    height: 18px;
+}
+
+.popup-category {
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 0.5px;
+    color: #1E293B;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.popup-badge {
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    flex-shrink: 0;
+}
+
+.popup-title {
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 6px;
+    color: #1E293B;
+    overflow-wrap: anywhere;
+}
+
+.popup-description {
+    font-size: 14px;
+    line-height: 1.45;
+    color: #334155;
+    margin-bottom: 12px;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+.popup-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 13px;
+    color: #475569;
+}
+
+.popup-date {
+    overflow-wrap: anywhere;
+}
+
+.popup-link {
+    color: #1d4ed8;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.popup-link-disabled {
+    font-size: 13px;
+    color: #94a3b8;
+    flex-shrink: 0;
+}
+
 .reports-map-wrapper {
     position: relative;
     width: 100%;
@@ -18,14 +135,18 @@
 
 .reports-map-canvas {
     width: 100%;
-    height: calc(100vh - 110px);
+    height: 100dvh;
     min-height: 620px;
     border-radius: 18px;
     overflow: hidden;
 }
 
+.reports-map-wrapper.fill-viewport {
+    height: 100dvh;
+}
+
 .reports-map-canvas.fill-viewport {
-    height: calc(100vh - 110px);
+    height: 100dvh;
     min-height: 0;
     border-radius: 0;
 }
@@ -464,4 +585,108 @@
     padding: 0;
     font-size: 13px;
     margin-top: 4px;
+}
+
+
+/* tablet */
+@media (max-width: 1024px) {
+    .reports-map-canvas,
+    .reports-map-canvas.fill-viewport {
+        height: 100dvh;
+        min-height: 0;
+        border-radius: 0;
+    }
+
+    .search-wrapper {
+        width: 320px;
+        max-width: calc(100% - 300px);
+        transform: translateX(-50%);
+    }
+
+    .filter-sidebar-content {
+        width: 260px;
+    }
+}
+
+/* phone */
+@media (max-width: 600px) {
+    .popup {
+        width: min(260px, 80vw);
+        max-width: 80vw;
+        padding: 10px 12px;
+    }
+
+    .reports-map-canvas,
+    .reports-map-canvas.fill-viewport {
+        height: 100dvh;
+        min-height: 0;
+        border-radius: 0;
+    }
+    
+    .popup-category {
+        font-weight: 700;
+        font-size: 15px;
+        letter-spacing: 0.5px;
+        color: #1E293B;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .popup-title {
+        font-size: 16px;
+        line-height: 1.2;
+    }
+
+    .popup-description {
+        font-size: 12px;
+        line-height: 1.3;
+    }
+
+    .popup-badge,
+    .popup-date,
+    .popup-link,
+    .popup-link-disabled {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+
+    .search-wrapper {
+        top: 16px;
+        left: 72px;
+        right: 16px;
+        width: auto;
+        max-width: none;
+        transform: none;
+    }
+
+    .search-bar {
+        width: 100%;
+    }
+
+    .search-input {
+        min-width: 0;
+        font-size: 14px;
+        padding: 12px 12px;
+    }
+
+    .search-button {
+        padding: 0 12px;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+    .current-location-wrapper {
+        position: absolute;
+        right: 16px;
+        bottom: 24px;
+        top: auto;
+        z-index: 30;
+    }
+
+    .current-location-button {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
 }

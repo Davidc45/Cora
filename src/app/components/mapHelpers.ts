@@ -111,90 +111,48 @@ export function generateReportPopup(
         : "#8A6D00";
 
     return `
-    <div style="
-        font-family: Inter, Arial, sans-serif;
-        width: 320px;
-        background: white;
-        border-radius: 12px;
-        padding: 16px;
-        box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-    ">
-
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-
-        <div style="
-            width:34px;
-            height:34px;
-            border-radius:50%;
-            background:#E6EDF3;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-        ">
+    <div class="popup">
+        <div class="popup-header">
+        <div class="popup-icon-wrap">
             ${
             iconPath
-                ? `<img src="${iconPath}" style="width:18px;height:18px;" />`
+                ? `<img src="${iconPath}" class="popup-icon" />`
                 : ""
             }
         </div>
 
-        <div style="
-            font-weight:700;
-            font-size:20px;
-            letter-spacing:0.5px;
-            color:#1E293B;
-        ">
+        <div class="popup-category">
             ${categoryLabel.toUpperCase()}
         </div>
 
-        <div style="
-            margin-left:auto;
+        <div
+            class="popup-badge"
+            style="
             background:${badgeBg};
             color:${badgeColor};
-            font-size:12px;
-            font-weight:700;
-            padding:4px 10px;
-            border-radius:999px;
             border:1px solid ${badgeColor}33;
-        ">
+            "
+        >
             ● ${badgeText}
         </div>
-
         </div>
 
-        <div style="
-        font-weight:700;
-        font-size:18px;
-        margin-bottom:6px;
-        color:#1E293B;
-        ">
+        <div class="popup-title">
         ${report.report_title ?? ""}
         </div>
 
-        <div style="
-        font-size:14px;
-        line-height:1.45;
-        color:#334155;
-        margin-bottom:12px;
-        ">
+        <div class="popup-description">
         ${report.report_description ?? ""}
         </div>
 
-        <div style="
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        font-size:13px;
-        color:#475569;
-        ">
-        <div>${formattedDate}</div>
+        <div class="popup-footer">
+        <div class="popup-date">${formattedDate}</div>
         ${
             detailHref !== "#"
-                ? `<a href="${detailHref}" style="color:#1d4ed8;font-size:13px;font-weight:600;text-decoration:underline;cursor:pointer;">see more</a>`
-                : `<span style="font-size:13px;color:#94a3b8;">see more</span>`
+            ? `<a href="${detailHref}" class="popup-link">see more</a>`
+            : `<span class="popup-link-disabled">see more</span>`
         }
         </div>
-
     </div>
     `;
 }
