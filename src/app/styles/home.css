@@ -2,6 +2,10 @@
     --primary-color: rgb(70, 70, 70);
     --primary-hover: rgb(50, 50, 50);
     --secondary-color: rgb(220, 220, 220);
+    --accent-orange: #f97316;
+    --accent-green: #16a34a;
+    --text-dark: #1f2937;
+    --text-muted: #6b7280; 
 }
 
 .home-container {
@@ -44,3 +48,102 @@
     background-color: var(--primary-hover);
 }
 
+.home-page {
+    padding: 80px 60px;
+}
+
+.home-page__hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 60px;
+}
+
+.home-page__hero-left {
+    max-width: 600px;
+}
+
+.home-page__title {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--text-dark);
+    line-height: 1.2;
+}
+
+.home-page__highlight {
+    display: block;
+    color: var(--accent-orange);
+    margin-top: 10px;
+}
+
+.home-page__subtitle {
+    margin-top: 20px;
+    font-size: 18px;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.home-page__buttons {
+    margin-top: 30px;
+    display: flex;
+    gap: 20px;
+}
+
+.home-page__btn {
+    padding: 14px 26px;
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.home-page__btn--primary {
+    background-color: var(--accent-green);
+    color: white;
+}
+
+.home-page__btn--primary:hover {
+    opacity: 0.9;
+}
+
+.home-page__btn--secondary {
+    background-color: var(--accent-orange);
+    color: white;
+}
+
+.home-page__btn--secondary:hover {
+    opacity: 0.9;
+}
+
+.home-page__hero-right {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.home-page__image {
+    width: 100%;
+    max-width: 600px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+
+@media (max-width: 900px) {
+    .home-page__hero {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .home-page__hero-left {
+        max-width: 100%;
+    }
+
+    .home-page__buttons {
+        justify-content: center;
+    }
+
+    .home-page__image {
+        max-width: 100%;
+    }
+}
