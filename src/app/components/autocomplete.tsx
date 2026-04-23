@@ -160,6 +160,8 @@ function AddressFormsWithMaps({ apiKey }: { apiKey: string }) {
       <input type="hidden" name="city" value={address.city || ''} />
       <input type="hidden" name="state" value={address.state || ''} />
       <input type="hidden" name="country" value={address.country || ''} />
+      <input type="hidden" name="lng" value={String(address.coordinates?.[0] ?? 0)} />
+      <input type="hidden" name="lat" value={String(address.coordinates?.[1] ?? 0)} />
     </>
   );
 }

@@ -8,6 +8,7 @@ import VoteButtons from '../vote-buttons';
 import ReportFlagControls from './report-flag-controls';
 import Link from 'next/link';
 import { categoryIconPath, categoryHeadline } from '@/lib/report-dashboard';
+import LocalDateTime from './local-datetime';
 
 export const dynamic = 'force-dynamic';
 
@@ -118,13 +119,6 @@ export default async function ReportDetailPage({ params }: PageProps) {
   }
 
   const Info = () => {
-    const createdAt = new Date(report.created_at)
-    const date = new Intl.DateTimeFormat('en-US', {
-      dateStyle: 'short',      
-    }).format(createdAt)
-    const time = new Intl.DateTimeFormat('en-US', {
-      timeStyle: 'short',
-    }).format(createdAt)
     return (
       <div className='info-container'>
         <section className='info info--inline info--category'>
@@ -141,11 +135,15 @@ export default async function ReportDetailPage({ params }: PageProps) {
         </section>
         <section className='info info--inline info--date'>
           <span className='info-label'>Date:</span>{' '}
-          <span className='info-data'>{date}</span>
+          <span className='info-data'>
+            <LocalDateTime value={report.created_at} kind="date" />
+          </span>
         </section>
         <section className='info info--inline info--time'>
           <span className='info-label'>Time:</span>{' '}
-          <span className='info-data'>{time}</span>
+          <span className='info-data'>
+            <LocalDateTime value={report.created_at} kind="time" />
+          </span>
         </section>
         <section className='info-description'>
           <h3 className='info-description-title'>Description</h3>

@@ -151,6 +151,47 @@ img, video, canvas {
     border-radius: 0;
 }
 
+/* Mobile: keep map UI below the sticky navbar so drawers don't cover it */
+@media (max-width: 899px) {
+    .reports-map-wrapper.fill-viewport,
+    .reports-map-canvas.fill-viewport {
+        height: calc(100dvh - 100px);
+    }
+
+    .filter-sidebar {
+        /* Single source of truth so the tab can track the drawer. */
+        --filter-sidebar-width: clamp(240px, 86vw, 320px);
+    }
+
+    .filter-sidebar-content {
+        width: var(--filter-sidebar-width);
+    }
+
+    /* Place the Filters tab below the sticky navbar */
+    .filter-toggle-tab {
+        top: 76px;
+    }
+
+    /* On mobile/tablet, the tab moves with the drawer (docks to its edge). */
+    .filter-sidebar.open .filter-toggle-tab {
+        margin-left: calc(var(--filter-sidebar-width) - 110px);
+        transition: margin-left 0.28s ease;
+    }
+
+    .filter-sidebar.closed .filter-toggle-tab {
+        margin-left: 0;
+        transition: margin-left 0.28s ease;
+    }
+
+    /* When filters are open, hide floating map controls to prevent overlap */
+    .filter-sidebar.open ~ .search-wrapper,
+    .filter-sidebar.open ~ .current-location-wrapper,
+    .filter-sidebar.open ~ .error-toast {
+        opacity: 0;
+        pointer-events: none;
+    }
+}
+
 .reports-map-unavailable {
     display: flex;
     align-items: center;
@@ -239,39 +280,127 @@ img, video, canvas {
 
 .search-wrapper {
     position: absolute;
-    top: 16px;
+    /* Default / tablet: aligned with Filters tab (see max-width 899 + min-width 600) */
+    top: 76px;
     left: 50%;
-    transform: translateX(-35%);
+    transform: translateX(-50%);
     z-index: 15;
-    width: 360px;
-    max-width: calc(100% - 420px);
+    /* Narrower footprint so the pill reads more centered on the map */
+    width: fit-content;
+    max-width: min(300px, calc(100vw - 48px));
+    transition: transform 0.28s ease;
 }
 
 .search-bar {
     display: flex;
     align-items: center;
     background: #d9e8f2;
-    border-radius: 12px;
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+    border-radius: 18px;
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.14);
     overflow: hidden;
+    height: 64px;
+    padding: 0 18px;
+    justify-content: center;
+    width: fit-content;
+    max-width: 80%;
+    margin: 0 auto;
+}
+
+/* Shrink-wrap so icon + input sit as one centered group (input no longer stretches full width). */
+.search-inner {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.search-icon-button {
+    border: none;
+    background: transparent;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex: 0 0 auto;
+}
+
+.search-icon {
+    width: 20px;
+    height: 20px;
+    display: block;
 }
 
 .search-input {
-    flex: 1;
+    flex: 0 1 auto;
     border: none;
     outline: none;
     background: transparent;
-    padding: 14px 16px;
-    font-size: 15px;
+    padding: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0;
+    /* Width follows placeholder / typed text; avoids huge empty space to the right */
+    min-width: 11ch;
+    max-width: 100%;
+    field-sizing: content;
 }
 
-.search-button {
-    border: none;
-    background: transparent;
-    padding: 0 16px;
-    cursor: pointer;
-    font-weight: 700;
+.search-input::placeholder {
     color: #334155;
+    font-weight: 600;
+    opacity: 1;
+}
+
+/* Search bar: fluid sizing from 600px and up (stacked layout: max-width 599px) */
+@media (min-width: 600px) {
+    .search-wrapper {
+        /* Horizontally centered on the full map (same as page band for this view) */
+        left: 50%;
+        right: auto;
+        margin: 0;
+        transform: translateX(-50%);
+        /* Slightly smaller footprint on desktop / tablet landscape */
+        max-width: min(clamp(220px, 32vw, 360px), calc(100vw - 2rem));
+    }
+
+    .search-bar {
+        height: clamp(44px, 4.6vw, 54px);
+        padding: 0 clamp(10px, 1.8vw, 18px);
+        border-radius: clamp(10px, 1vw, 16px);
+        box-shadow: 0 clamp(4px, 0.5vw, 8px) clamp(10px, 1.1vw, 18px) rgba(0, 0, 0, 0.1);
+        max-width: 100%;
+    }
+
+    .search-inner {
+        gap: clamp(6px, 0.9vw, 12px);
+    }
+
+    .search-icon {
+        width: clamp(16px, 1.7vw, 22px);
+        height: clamp(16px, 1.7vw, 22px);
+    }
+
+    .search-input {
+        font-size: clamp(14px, 0.3rem + 0.9vw, 20px);
+        min-width: min(11ch, 100%);
+    }
+}
+
+/* Same row as .filter-toggle-tab; search stays visually centered on the map */
+@media (min-width: 600px) and (max-width: 899px) {
+    .search-wrapper {
+        top: 76px;
+    }
+}
+
+@media (min-width: 900px) {
+    .search-wrapper {
+        top: 16px;
+    }
 }
 
 .current-location-wrapper {
@@ -406,15 +535,11 @@ img, video, canvas {
     z-index: 20;
     display: flex;
     align-items: flex-start;
+    --filter-sidebar-width: 280px;
 }
 
 .filter-sidebar.open,
 .filter-sidebar.closed {
-    pointer-events: none;
-}
-
-.filter-toggle-tab,
-.filter-sidebar-content {
     pointer-events: auto;
 }
 
@@ -443,7 +568,7 @@ img, video, canvas {
     position: absolute;
     top: 0;
     left: 0;
-    width: 280px;
+    width: var(--filter-sidebar-width);
     height: 100%;
     background: #d7e5ef;
     padding: 72px 18px 16px 18px;
@@ -460,10 +585,6 @@ img, video, canvas {
     transform: translateX(0);
 }
 
-.filter-sidebar.open .filter-toggle-tab {
-    margin-left: 260px;
-    transition: margin-left 0.28s ease;
-}
 
 .filter-sidebar.closed .filter-toggle-tab {
     margin-left: 0;
@@ -597,19 +718,21 @@ img, video, canvas {
         border-radius: 0;
     }
 
-    .search-wrapper {
-        width: 320px;
-        max-width: calc(100% - 300px);
-        transform: translateX(-50%);
+    .filter-sidebar-content {
+        width: var(--filter-sidebar-width);
     }
 
-    .filter-sidebar-content {
-        width: 260px;
+    .filter-sidebar {
+        --filter-sidebar-width: 260px;
+    }
+
+    .filter-sidebar.open ~ .search-wrapper {
+        margin-left: 0;
     }
 }
 
-/* phone */
-@media (max-width: 600px) {
+/* phone / small screens: search below Filters (600+ uses row + center rules above) */
+@media (max-width: 599px) {
     .popup {
         width: min(260px, 80vw);
         max-width: 80vw;
@@ -654,28 +777,36 @@ img, video, canvas {
     }
 
     .search-wrapper {
-        top: 16px;
-        left: 72px;
-        right: 16px;
-        width: auto;
-        max-width: none;
-        transform: none;
+        top: 12px;
+        left: 50%;
+        right: auto;
+        /* Symmetric so translateX(-50%) truly centers on the map (was shifted by margin-right) */
+        width: min(300px, calc(100% - 32px));
+        max-width: 100%;
+        margin: 50px 0 10px;
+        transform: translateX(-50%);
     }
 
     .search-bar {
         width: 100%;
+        box-sizing: border-box;
+        justify-content: center;
+        margin: 0 auto;
+        height: 65px;
+    }
+
+    .search-inner {
+        justify-content: center;
+        width: 100%;
+        max-width: 100%;
     }
 
     .search-input {
+        font-size: 14px;
         min-width: 0;
-        font-size: 14px;
-        padding: 12px 12px;
-    }
-
-    .search-button {
-        padding: 0 12px;
-        font-size: 14px;
-        flex-shrink: 0;
+        /* Keep icon + text as one centered cluster (no flex grow) */
+        flex: 0 1 auto;
+        text-align: left;
     }
     .current-location-wrapper {
         position: absolute;

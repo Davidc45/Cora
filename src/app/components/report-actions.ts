@@ -89,6 +89,17 @@ export async function createReport(formData: FormData) {
   const city = trim(formData.get('city'));
   const state = trim(formData.get('state'));
   const country = trim(formData.get('country'));
+  const lngRaw = trim(formData.get('lng'));
+  const latRaw = trim(formData.get('lat'));
+
+  const lng = lngRaw ? Number(lngRaw) : NaN;
+  const lat = latRaw ? Number(latRaw) : NaN;
+  const hasCoords =
+    Number.isFinite(lng) &&
+    Number.isFinite(lat) &&
+    Math.abs(lng) <= 180 &&
+    Math.abs(lat) <= 90 &&
+    !(lng === 0 && lat === 0);
 
   if (!title || !description || !category) {
     redirect(
@@ -111,7 +122,8 @@ export async function createReport(formData: FormData) {
       category: category,
       address: `${street}, ${city}, ${state}, ${country}`,
       created_by: user.id,
-      location: `POINT(0 0)`, // placeholder location; replace with real coordinates later
+      // PostGIS point stored as "POINT(lng lat)" (WKT). Falls back to placeholder if no coords.
+      location: hasCoords ? `POINT(${lng} ${lat})` : `POINT(0 0)`,
     })
     .select('*')
     .single();

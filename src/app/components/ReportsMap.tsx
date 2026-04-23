@@ -502,19 +502,36 @@ console.log("CATEGORY_OPTIONS", CATEGORY_OPTIONS);
 
       <div className="search-wrapper" ref={searchWrapperRef}>
         <div className="search-bar">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => handleSearchInput(e.target.value)}
-            onFocus={() => {
-              if (predictions.length > 0) setShowPredictions(true);
-            }}
-            placeholder="Search by location..."
-            className="search-input"
-          />
-          <button onClick={handleSearchLocation} className="search-button">
-            Search
-          </button>
+          <div className="search-inner">
+            <button
+              type="button"
+              className="search-icon-button"
+              onClick={handleSearchLocation}
+              aria-label="Search"
+            >
+              <img
+                src="/assets/search-magnifying-glass.png"
+                alt=""
+                className="search-icon"
+              />
+            </button>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => handleSearchInput(e.target.value)}
+              onFocus={() => {
+                if (predictions.length > 0) setShowPredictions(true);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSearchLocation();
+                }
+              }}
+              placeholder="Search by location..."
+              className="search-input"
+            />
+          </div>
         </div>
         
         {showPredictions && predictions.length > 0 && (

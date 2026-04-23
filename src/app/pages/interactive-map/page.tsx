@@ -3,6 +3,7 @@ import { adminClient } from '@/lib/supabase/admin';
 import ReportsMap from '@/app/components/ReportsMap';
 import type { Report } from '@/app/components/mapTypes';
 import { locationToGeoJSON } from '@/lib/mapLocation';
+import ScrollLock from './scroll-lock';
 
 export const dynamic = 'force-dynamic';
 
@@ -142,6 +143,7 @@ export default async function InteractiveMapPage() {
 
   return (
     <div className="interactive-map-page">
+      <ScrollLock />
       <h1 className="sr-only">Interactive map</h1>
       <ReportsMap reports={reports} fillViewport />
     </div>
