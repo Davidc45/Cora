@@ -729,7 +729,7 @@
 }
 
 .report-dashboard-card__flag-btn {
-    color: transparent !important;
+    color: inherit !important;
     padding: 4px !important;
     min-width: auto;
 }
@@ -785,11 +785,11 @@
 }
 
 .report-dashboard-card__footer .vote-dashboard-icon--up {
-    transform: rotate(-90deg);
+    transform: rotate(90deg);
 }
 
 .report-dashboard-card__footer .vote-dashboard-icon--down {
-    transform: rotate(90deg);
+    transform: rotate(-90deg);
 }
 
 @media screen and (max-width: 480px) {

@@ -508,6 +508,12 @@ body {
   color: gray;
 }
 
+.report-flag-open-btn--with-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 .report-flag-open-btn:hover {
   background: rgb(0, 0, 158);
 }

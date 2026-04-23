@@ -375,8 +375,9 @@ export default function ExploreListClient({
                       phoneVerified={phoneVerified}
                       flagIconSrc="/assets/report-flag-icon.png"
                       buttonClassName="report-dashboard-card__flag-btn"
+                      label="Report"
+                      labelClassName="report-dashboard-card__flag-label"
                     />
-                    <span className="report-dashboard-card__flag-label">Report</span>
                   </div>
                 </div>
               </article>
