@@ -730,8 +730,12 @@
 
 .report-dashboard-card__flag-btn {
     color: inherit !important;
-    padding: 4px !important;
+    padding: 6px 10px !important;
     min-width: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
 }
 
 .report-dashboard-card__flag-btn:hover {
@@ -785,16 +789,16 @@
 }
 
 .report-dashboard-card__footer .vote-dashboard-icon--up {
-    transform: rotate(90deg);
-}
-
-.report-dashboard-card__footer .vote-dashboard-icon--down {
     transform: rotate(-90deg);
 }
 
+.report-dashboard-card__footer .vote-dashboard-icon--down {
+    transform: rotate(90deg);
+}
+
 @media screen and (max-width: 480px) {
-    .report-dashboard-card__flag-label {
-        display: none;
+    .report-dashboard-card__flag-btn {
+        padding: 6px 10px !important;
     }
 }
 

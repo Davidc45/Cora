@@ -271,15 +271,21 @@
     font-weight: 800;
     font-size: 1.05rem;
     color: #0f172a;
+    max-width: 100%;
+    flex-shrink: 1;
+    min-width: 0;
+    white-space: nowrap;
 }
 
 .report-detail-flag-btn {
     background: transparent !important;
     border: none;
-    padding: 0;
+    padding: 8px 12px;
     display: inline-flex;
     align-items: center;
+    gap: 10px;
     cursor: pointer;
+    border-radius: 999px;
 }
 
 .report-detail-flag-btn img {
@@ -288,8 +294,12 @@
     object-fit: contain;
 }
 
+.report-detail-flag-btn:hover {
+    background: rgba(15, 23, 42, 0.06) !important;
+}
+
 .report-detail-flag-btn:hover img {
-    opacity: 0.75;
+    opacity: 0.8;
 }
 
 .report-detail-flag-label {
@@ -356,6 +366,9 @@
     padding-bottom: none;
     border-radius: 35px;
     background-color: #FEEFD0;
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 /* Comments section alignment (match Figma: centered header above pill) */
@@ -480,6 +493,14 @@
     transform: none;
 }
 
+.vote-detail-icon--up {
+    transform: rotate(180deg);
+}
+
+.vote-detail-icon--down {
+    transform: rotate(0deg);
+}
+
 
 .vote-detail-icon.is-active {
     filter: brightness(0) saturate(100%) invert(57%) sepia(92%) saturate(1800%) hue-rotate(2deg) brightness(103%) contrast(103%);
@@ -501,6 +522,7 @@
     height: 40px;
     align-content: center;
     background-color: inherit;
+    min-width: 0;
 }
 
 .comment-box:focus {
@@ -516,6 +538,7 @@
     width: 40px;
     height: 40px;
     cursor: pointer;
+    flex: 0 0 auto;
 }
 
 .comment-button:hover {
@@ -672,7 +695,14 @@
     }
 
     .report-detail-footer-actions {
-        gap: 18px;
+        gap: 14px;
+        flex-wrap: wrap;
+        min-width: 0;
+    }
+
+    .report-detail-comment-count {
+        font-size: 0.95rem;
+        gap: 6px;
     }
 
     .vote-detail-icon,
@@ -686,9 +716,10 @@
         height: 20px;
     }
 
-    /* Hide "Report" label on very small screens like in the Figma mock */
-    .report-detail-flag-label {
-        display: none;
+    /* Keep "Report" label visible on mobile (bigger tap target). */
+    .report-detail-flag-btn {
+        padding: 6px 10px;
+        gap: 8px;
     }
 
     /* Comments section */
@@ -707,6 +738,7 @@
     .comment-form {
         width: 100%;
         max-width: none;
+        padding: 8px;
     }
 
     .comment-list {
