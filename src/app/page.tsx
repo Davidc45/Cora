@@ -27,21 +27,37 @@ export default function Home() {
     }
   })
 
-  return (
-    <div className="home-container">
-      <h2 className="home-message">
-        Help keep everyone in your community alert and informed. Be the voice of your community
-        </h2>
-        <h1 className="home-title">CORA</h1>
-        <p className="home-mission-statement">
-          Mission statement is in progress.
+return (
+  <div className="home-page">
+    <section className="home-page__hero">
+      <div className="home-page__hero-left">
+        <h1 className="home-page__title">
+          Help keep everyone in your community
+          <span className="home-page__highlight"> alert and informed.</span>
+        </h1>
+
+        <p className="home-page__subtitle">
+          Our mission is to empower Orange County residents with real-time safety updates
+          and a collaborative platform to protect our neighborhoods together.
         </p>
-      <div className="home-buttons">
-        <Link href='/pages/reports' className="home-button"> Reports Page</Link>
-        <Link href='/pages/signup' className="home-button">Sign Up</Link>
-        <Link href='/pages/interactive-map' className="home-button">Explore Map</Link>
+
+        <div className="home-page__buttons">
+          <Link href="/pages/signup" className="home-page__btn home-page__btn--primary">
+            Sign Up
+          </Link>
+          <Link href="/pages/interactive-map" className="home-page__btn home-page__btn--secondary">
+            Explore Map
+          </Link>
+        </div>
       </div>
-      <input type="hidden" name="code" value={code} />
-    </div>
-  );
-}
+
+      <div className="home-page__hero-right">
+        <img
+          src="/assets/community-map.png"
+          alt="Community overview"
+          className="home-page__image"
+        />
+      </div>
+    </section>
+  </div>
+);
