@@ -22,6 +22,10 @@ type ReportFlagControlsProps = {
   /** When set, replaces the default flag glyph (e.g. dashboard PNG). */
   flagIconSrc?: string;
   buttonClassName?: string;
+  /** Optional label rendered inside the same clickable button as the flag icon. */
+  label?: string;
+  /** Class applied to the label span (when label is provided). */
+  labelClassName?: string;
 };
 
 type AuthGate = 'none' | 'signIn' | 'phone';
@@ -32,6 +36,8 @@ export default function ReportFlagControls({
   phoneVerified = false,
   flagIconSrc,
   buttonClassName = '',
+  label,
+  labelClassName = '',
 }: ReportFlagControlsProps) {
   const router = useRouter();
   const pathname = usePathname() || `/pages/reports/${reportId}`;
@@ -123,9 +129,20 @@ export default function ReportFlagControls({
       {/* <div className="report-flag-actions"> */}
         <button
           type="button"
-          className={`report-flag-open-btn ${buttonClassName}`.trim()}
+          className={[
+            'report-flag-open-btn',
+            label ? 'report-flag-open-btn--with-label' : '',
+            buttonClassName,
+          ]
+            .filter(Boolean)
+            .join(' ')}
           onClick={openModal}
         >
+          {label ? (
+            <span className={labelClassName}>
+              {label}
+            </span>
+          ) : null}
           {flagIconSrc ? (
             <img src={flagIconSrc} alt="" width={22} height={22} />
           ) : (

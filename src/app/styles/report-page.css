@@ -242,6 +242,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 16px;
+    flex-wrap: wrap;
     padding: 14px 34px 24px 22px;
 }
 
@@ -250,12 +251,16 @@
     align-items: center;
     gap: 28px;
     flex-wrap: wrap;
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .report-detail-footer-flag {
     display: inline-flex;
     align-items: center;
     gap: 10px;
+    margin-left: auto;
+    flex: 0 0 auto;
 }
 
 .report-detail-comment-count {

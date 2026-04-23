@@ -15,6 +15,7 @@ function resolveGoogleMapsApiKey(): string {
 
 function AddressFormsWithMaps({ apiKey }: { apiKey: string }) {
   const [address, setAddress] = useState({
+    full: '',
     street: '',
     city: '',
     county: '',
@@ -44,12 +45,25 @@ function AddressFormsWithMaps({ apiKey }: { apiKey: string }) {
       console.log(`lat: ${lat}, lng: ${lng}`);
     }
 
+    const byType = (type: string) =>
+      addr.find((c) => c.types?.includes(type))?.short_name ?? '';
+
+    const streetNumber = byType('street_number');
+    const route = byType('route');
+    const locality = byType('locality') || byType('postal_town');
+    const admin1 = byType('administrative_area_level_1');
+    const country = byType('country');
+
+    const street = `${streetNumber} ${route}`.trim();
+    const formatted = place.formatted_address?.trim() ?? '';
+
     setAddress((prev) => ({
       ...prev,
-      street: `${addr[0]?.short_name ?? ''} ${addr[1]?.short_name ?? ''}`.trim(),
-      city: addr[2]?.short_name ?? '',
-      state: addr[4]?.short_name ?? '',
-      country: addr[5]?.short_name ?? '',
+      full: formatted || street,
+      street: street || formatted,
+      city: locality,
+      state: admin1,
+      country,
     }));
   };
 
@@ -77,36 +91,20 @@ function AddressFormsWithMaps({ apiKey }: { apiKey: string }) {
     <>
       <input
         placeholder="Address"
-        name="street"
-        id="street"
+        name="full"
+        id="address"
         ref={inputRef}
-        value={address.street || ''}
+        value={address.full || ''}
         onChange={handleChange}
+        autoComplete="street-address"
+        required
       />
 
-      <input
-        placeholder="City"
-        name="city"
-        id="city"
-        value={address.city || ''}
-        onChange={handleChange}
-      />
-
-      <input
-        placeholder="State"
-        name="state"
-        id="state"
-        value={address.state || ''}
-        onChange={handleChange}
-      />
-
-      <input
-        placeholder="Country"
-        name="country"
-        id="country"
-        value={address.country || ''}
-        onChange={handleChange}
-      />
+      {/* Submit structured parts for the server action (kept hidden for a cleaner form). */}
+      <input type="hidden" name="street" value={address.street || address.full || ''} />
+      <input type="hidden" name="city" value={address.city || ''} />
+      <input type="hidden" name="state" value={address.state || ''} />
+      <input type="hidden" name="country" value={address.country || ''} />
     </>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
 import { createReport } from '@/app/components/report-actions';
@@ -32,6 +32,8 @@ export default function UploadForm({
   phoneVerified?: boolean;
 }) {
   const [category, setCategory] = useState('');
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [imagePreviewName, setImagePreviewName] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
   const err = searchParams.get('err');
@@ -42,6 +44,12 @@ export default function UploadForm({
     !!user &&
     (!!err || (!phoneVerified && !dismissedHere));
 
+
+  useEffect(() => {
+    return () => {
+      if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+    };
+  }, [imagePreviewUrl]);
 
   const handleCloseModal = () => {
     setDismissedHere(true);
@@ -147,7 +155,7 @@ export default function UploadForm({
           placeholder='Provide a detailed account of what happened...'
           id="description" 
           name="description" 
-          rows={3} 
+          rows={2} 
           className='upload-input' 
           maxLength={400} 
           required 
@@ -157,13 +165,31 @@ export default function UploadForm({
           Photo (optional, PNG or JPEG, max ~4 MB)
         </label>
         <div className='upload-image'>
-          <img 
-            src='/assets/cloudflare-icon.png' 
-            alt=''
-            width={40}
-            className='cloudflare-icon'
-          />
-          <p>Click to upload images.</p>
+          {imagePreviewUrl ? (
+            <div className="upload-image-preview" aria-live="polite">
+              <img
+                src={imagePreviewUrl}
+                alt={imagePreviewName ? `Selected image: ${imagePreviewName}` : 'Selected image'}
+                className="upload-image-preview-img"
+              />
+              <div className="upload-image-preview-meta">
+                <div className="upload-image-preview-title">Image selected</div>
+                {imagePreviewName && (
+                  <div className="upload-image-preview-name">{imagePreviewName}</div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <>
+              <img 
+                src='/assets/cloudflare-icon.png' 
+                alt=''
+                width={40}
+                className='cloudflare-icon'
+              />
+              <p>Click to upload images.</p>
+            </>
+          )}
           <input
             id="image"
             name="image"
@@ -174,13 +200,22 @@ export default function UploadForm({
               const f = e.target.files?.[0];
               if (!f) {
                 setImageTooLarge(false);
+                if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+                setImagePreviewUrl(null);
+                setImagePreviewName(null);
                 return;
               }
               if (f.size > MAX_REPORT_IMAGE_BYTES) {
                 setImageTooLarge(true);
+                if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+                setImagePreviewUrl(null);
+                setImagePreviewName(null);
                 e.target.value = '';
               } else {
                 setImageTooLarge(false);
+                if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+                setImagePreviewUrl(URL.createObjectURL(f));
+                setImagePreviewName(f.name);
               }
             }}
           />

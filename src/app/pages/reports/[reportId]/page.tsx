@@ -61,15 +61,9 @@ export default async function ReportDetailPage({ params }: PageProps) {
   const upvotes = report.upvotes ?? 0;
   const downvotes = report.downvotes ?? 0;
 
-  let hideReportFlag = false;
-  if (userId) {
-    const { data: authorRow } = await supabase
-      .from('reports')
-      .select('created_by')
-      .eq('report_id', reportId)
-      .maybeSingle();
-    hideReportFlag = authorRow?.created_by === userId;
-  }
+  // Always show the "Report" control in the footer (even to the author),
+  // since the modal flow already guards auth + phone verification.
+  const hideReportFlag = false;
 
 
   const { data: profile } =  await supabase
@@ -203,8 +197,9 @@ export default async function ReportDetailPage({ params }: PageProps) {
                   phoneVerified={phoneVerified}
                   flagIconSrc="/assets/report-details-flag-icon.png"
                   buttonClassName="report-detail-flag-btn"
+                  label="Report"
+                  labelClassName="report-detail-flag-label"
                 />
-                <span className="report-detail-flag-label">Report</span>
               </div>
             )}
           </div>
