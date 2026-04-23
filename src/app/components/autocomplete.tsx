@@ -74,9 +74,16 @@ function AddressFormsWithMaps({ apiKey }: { apiKey: string }) {
 
   useEffect(() => {
     let autocomplete: google.maps.places.Autocomplete | null = null;
+    let timeoutId: number | null = null;
 
     async function loadAutocomplete() {
       try {
+        timeoutId = window.setTimeout(() => {
+          setMapsError(
+            'Address autocomplete is taking too long to load. You can still type the address manually.'
+          );
+        }, 8000);
+
         await ensureGoogleMapsReady(
           apiKey,
           process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID?.trim() || undefined
@@ -99,23 +106,31 @@ function AddressFormsWithMaps({ apiKey }: { apiKey: string }) {
         });
 
         setMapsReady(true);
+        if (timeoutId != null) window.clearTimeout(timeoutId);
       } catch (error) {
         console.error('Autocomplete load failed:', error);
-        setMapsError('Google Maps autocomplete failed to load.');
+        const details =
+          error instanceof Error
+            ? error.message
+            : typeof error === 'string'
+              ? error
+              : '';
+        setMapsError(
+          `Google Maps autocomplete failed to load.${details ? ` (${details})` : ''}`
+        );
+        if (timeoutId != null) window.clearTimeout(timeoutId);
       }
     }
 
     loadAutocomplete();
 
     return () => {
+      if (timeoutId != null) window.clearTimeout(timeoutId);
       if (autocomplete) {
         google.maps.event.clearInstanceListeners(autocomplete);
       }
     };
   }, [apiKey]);
-
-  if (mapsError) return <p>error: {mapsError}</p>;
-  if (!mapsReady) return <p>loading...</p>;
 
   return (
     <>
@@ -129,6 +144,16 @@ function AddressFormsWithMaps({ apiKey }: { apiKey: string }) {
         autoComplete="street-address"
         required
       />
+      {!mapsReady && !mapsError ? (
+        <p className="text-sm text-slate-600" role="status">
+          Loading address autocomplete…
+        </p>
+      ) : null}
+      {mapsError ? (
+        <p className="text-sm text-amber-800 dark:text-amber-200" role="note">
+          {mapsError}
+        </p>
+      ) : null}
 
       {/* Submit structured parts for the server action (kept hidden for a cleaner form). */}
       <input type="hidden" name="street" value={address.street || address.full || ''} />
