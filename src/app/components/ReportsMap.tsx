@@ -120,6 +120,15 @@ export default function ReportsMap({
     let infoWindow: google.maps.InfoWindow | null = null;
     let hoverWindow: google.maps.InfoWindow | null = null;
 
+    function handlePopupCloseClick(e: MouseEvent) {
+      const t = e.target as HTMLElement | null;
+      if (!t?.closest(".popup-close")) return;
+      e.preventDefault();
+      e.stopPropagation();
+      infoWindow?.close();
+      hoverWindow?.close();
+    }
+
     async function init() {
       await ensureGoogleMapsReady(key, mapId);
       if (!mapRef.current) return;
@@ -139,8 +148,9 @@ export default function ReportsMap({
       geocoderRef.current = new gmaps.maps.Geocoder();
       autocompleteServiceRef.current = new gmaps.maps.places.AutocompleteService();
       placesServiceRef.current = new gmaps.maps.places.PlacesService(map);
-      infoWindow = new gmaps.maps.InfoWindow();
-      hoverWindow = new gmaps.maps.InfoWindow();
+      infoWindow = new gmaps.maps.InfoWindow({ headerDisabled: true });
+      hoverWindow = new gmaps.maps.InfoWindow({ headerDisabled: true });
+      map.getDiv().addEventListener("click", handlePopupCloseClick);
 
       markers = filteredReports.map((r) => {
         const [lng, lat] = r.location_geojson!.coordinates;
@@ -201,6 +211,7 @@ export default function ReportsMap({
     init().catch(console.error);
 
     return () => {
+      mapRef.current?.removeEventListener("click", handlePopupCloseClick);
       if (clusterer) clusterer.setMap(null);
       if (infoWindow) infoWindow.close();
       if (hoverWindow) hoverWindow.close();

@@ -125,6 +125,7 @@ export function generateReportPopup(
             ${categoryLabel.toUpperCase()}
         </div>
 
+        <div class="popup-header-actions">
         <div
             class="popup-badge"
             style="
@@ -134,6 +135,8 @@ export function generateReportPopup(
             "
         >
             ● ${badgeText}
+        </div>
+        <button type="button" class="popup-close" aria-label="Close">&times;</button>
         </div>
         </div>
 
