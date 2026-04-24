@@ -163,20 +163,14 @@ export async function createReport(formData: FormData) {
       username: profile.username,
       rid: String(data.report_id),
     });
-    if (
-      res &&
-      typeof res === 'object' &&
-      'success' in res &&
-      res.success === true
-    ) {
-      // Prefer the stable public URL for notifications (presigned URLs can have
-      // CORS/length issues in push notification image previews).
-      const pub = (res as { publicUrl?: unknown }).publicUrl;
-      const signed = (res as { url?: unknown }).url;
-      if (typeof pub === 'string' && pub.trim()) {
-        notificationImageUrl = pub.trim();
-      } else if (typeof signed === 'string' && signed.trim()) {
-        notificationImageUrl = signed.trim();
+
+    if (res && typeof res === 'object' && 'success' in res && res.success === true) {
+      // Build a stable public URL for the notification image directly.
+      // The key in R2 is "{reportId}-{filename}" (see api/cloudflare POST handler).
+      const imagePublicBase = process.env.NEXT_PUBLIC_R2_PUBLIC_IMAGE_URL?.trim();
+      const imageKey = `${data.report_id}-${reportImageName}`;
+      if (imagePublicBase) {
+        notificationImageUrl = `${imagePublicBase.replace(/\/$/, '')}/${imageKey}`;
       }
     }
   }
