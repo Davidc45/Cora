@@ -12,6 +12,7 @@ import './styles/home.css';
 import './styles/reports.css';
 import './styles/upload.css';
 import './styles/report-page.css';
+import './styles/account.css';
 import { createClient } from "@/lib/supabase/server";
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
