@@ -21,13 +21,30 @@ import {
   isReportFlagReasonCode,
   REPORT_FLAG_OTHER_MAX_LEN,
 } from '@/lib/report-flag-reasons';
+import type { ReportFlagReasonCode } from '@/lib/report-flag-reasons';
 import {
   SIGN_IN_REQUIRED,
   VERIFICATION_REQUIRED,
 } from '@/lib/report-auth-errors';
-import type { ReportFlagReasonCode } from '@/lib/report-flag-reasons';
 import { postImage } from './cfhelpers';
 import { buildPublicR2Url, isPresignedUrl } from '@/lib/presigned-url';
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+
+let _r2: S3Client | null = null;
+function getR2(): S3Client | null {
+  const endpoint = process.env.S3_ENDPOINT;
+  const keyId = process.env.S3_KEY_ID;
+  const secret = process.env.S3_SECRET_KEY;
+  if (!endpoint || !keyId || !secret) return null;
+  if (!_r2) {
+    _r2 = new S3Client({
+      region: 'auto',
+      endpoint,
+      credentials: { accessKeyId: keyId, secretAccessKey: secret },
+    });
+  }
+  return _r2;
+}
 
 /**
  * Normalize form values: coerce `null` to empty string and trim whitespace.
@@ -155,39 +172,47 @@ export async function createReport(formData: FormData) {
     );
   }
 
+  // Upload image directly to R2 (skip the HTTP round-trip through /api/cloudflare).
   let notificationImageUrl: string | null = null;
   if (reportImageName && hasReportImageFile(image)) {
-    const res = await postImage({
-      image,
-      database: 'cora-image-database',
-      username: profile.username,
-      rid: String(data.report_id),
-    });
-
-    if (res && typeof res === 'object' && 'success' in res && res.success === true) {
-      // Build a stable public URL for the notification image directly.
-      // The key in R2 is "{reportId}-{filename}" (see api/cloudflare POST handler).
-      const imagePublicBase = process.env.NEXT_PUBLIC_R2_PUBLIC_IMAGE_URL?.trim();
-      const imageKey = `${data.report_id}-${reportImageName}`;
-      if (imagePublicBase) {
-        notificationImageUrl = `${imagePublicBase.replace(/\/$/, '')}/${imageKey}`;
+    const r2 = getR2();
+    const imageKey = `${data.report_id}-${reportImageName}`;
+    if (r2) {
+      try {
+        const bytes = await image.arrayBuffer();
+        await r2.send(new PutObjectCommand({
+          Bucket: 'cora-image-database',
+          Key: imageKey,
+          Body: Buffer.from(bytes),
+        }));
+        const imagePublicBase = process.env.NEXT_PUBLIC_R2_PUBLIC_IMAGE_URL?.trim();
+        if (imagePublicBase) {
+          notificationImageUrl = `${imagePublicBase.replace(/\/$/, '')}/${imageKey}`;
+        }
+      } catch (err) {
+        console.error('Error uploading report image to R2', err);
       }
+    } else {
+      // Fallback: use the HTTP API route if S3 env vars aren't available.
+      await postImage({
+        image,
+        database: 'cora-image-database',
+        username: profile.username,
+        rid: String(data.report_id),
+      });
     }
   }
 
-  try {
-    const bodySnippet =
-      description.length > 240 ? `${description.slice(0, 237)}…` : description;
-    const reportUrl = `/pages/reports/${data.report_id}`;
-    await sendNewReportNotification(
-      data.report_title,
-      bodySnippet,
-      notificationImageUrl,
-      reportUrl,
-    );
-  } catch (err) {
-    console.error('Error sending new report notification', err);
-  }
+  // Fire-and-forget: send notification without blocking the redirect.
+  const bodySnippet =
+    description.length > 240 ? `${description.slice(0, 237)}…` : description;
+  const reportUrl = `/pages/reports/${data.report_id}`;
+  sendNewReportNotification(
+    data.report_title,
+    bodySnippet,
+    notificationImageUrl,
+    reportUrl,
+  ).catch((err) => console.error('Error sending new report notification', err));
 
   revalidatePath('/', 'page');
   revalidatePath('/pages/reports');
