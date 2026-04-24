@@ -137,8 +137,6 @@ export const viewport: Viewport = {
   themeColor: "#ff8800",
 };
 
-export const dynamic = 'force-dynamic';
-
 /**
  * Root layout component.
  *

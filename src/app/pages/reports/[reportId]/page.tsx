@@ -11,8 +11,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { categoryIconPath, categoryHeadline } from '@/lib/report-dashboard';
 import LocalDateTime from './local-datetime';
-
-export const dynamic = 'force-dynamic';
+import { getCachedReport, getCachedImages, getCachedReportComments } from '@/lib/data-cache';
 
 type PageProps = { params: Promise<{ reportId: string }> };
 
@@ -23,20 +22,27 @@ export default async function ReportDetailPage({ params }: PageProps) {
 
   const supabase = await createClient();
 
-  // Round 1: fire all independent queries simultaneously.
+  // Round 1: fire cached + auth queries simultaneously.
   const [
-    images,
-    { data: report, error: reportError },
+    cachedImages,
+    cachedReport,
     { data: { user } },
-    comments,
+    cachedComments,
   ] = await Promise.all([
-    getImages(),
-    supabase.from('reports_with_meta_updated').select('*').eq('report_id', reportId).maybeSingle(),
+    getCachedImages(),
+    getCachedReport(reportId),
     supabase.auth.getUser(),
-    getReportComments(reportId),
+    getCachedReportComments(reportId),
   ]);
 
-  if (reportError || !report) notFound();
+  // Fall back to uncached queries if admin client wasn't available.
+  const images = cachedImages ?? await getImages();
+  const report = cachedReport ?? (
+    await supabase.from('reports_with_meta_updated').select('*').eq('report_id', reportId).maybeSingle()
+  ).data;
+  const comments = cachedComments ?? await getReportComments(reportId);
+
+  if (!report) notFound();
 
   const userId = user?.id ?? null;
 

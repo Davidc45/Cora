@@ -4,14 +4,12 @@ import ReportsMap from '@/app/components/ReportsMap';
 import type { Report } from '@/app/components/mapTypes';
 import { locationToGeoJSON } from '@/lib/mapLocation';
 import ScrollLock from './scroll-lock';
+import { getCachedMapMeta, getCachedMapGeo } from '@/lib/data-cache';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
-const PAGE_SIZE = 1000;
-const GEO_IN_CHUNK = 300;
-
-/** Default map center (Orange County area) — used for placeholder / missing geometry. */
 const PLACEHOLDER: [number, number] = [-117.8311, 33.7175];
+const GEO_IN_CHUNK = 300;
 
 type MetaRow = {
   report_id: number;
@@ -30,75 +28,6 @@ type GeoRow = {
   created_at: string | null;
   location: unknown;
 };
-
-function chunkIds(ids: number[], size: number): number[][] {
-  const out: number[][] = [];
-  for (let i = 0; i < ids.length; i += size) {
-    out.push(ids.slice(i, i + size));
-  }
-  return out;
-}
-
-/**
- * Load every row from `reports_with_meta` (Supabase caps at 1000 per request without pagination).
- */
-async function fetchAllMeta(
-  supabase: Awaited<ReturnType<typeof createClient>>
-): Promise<MetaRow[]> {
-  const all: MetaRow[] = [];
-  let from = 0;
-  for (;;) {
-    const { data, error } = await supabase
-      .from('reports_with_meta')
-      .select(
-        'report_id, report_title, report_description, report_image, status, score, upvotes, downvotes'
-      )
-      .order('report_id', { ascending: true })
-      .range(from, from + PAGE_SIZE - 1);
-
-    if (error) {
-      console.error('interactive-map: reports_with_meta', error.message, error.code);
-      break;
-    }
-    const batch = (data ?? []) as MetaRow[];
-    all.push(...batch);
-    if (batch.length < PAGE_SIZE) break;
-    from += PAGE_SIZE;
-  }
-  return all;
-}
-
-/**
- * Merge geometry from `reports` using service role when available (RLS often hides `location`).
- */
-async function fetchGeoByReportId(
-  reportIds: number[],
-  sessionClient: Awaited<ReturnType<typeof createClient>>
-): Promise<Map<number, GeoRow>> {
-  const map = new Map<number, GeoRow>();
-  if (reportIds.length === 0) return map;
-
-  const db = adminClient ?? sessionClient;
-  const chunks = chunkIds(reportIds, GEO_IN_CHUNK);
-
-  // Fetch all chunks in parallel instead of sequentially.
-  const results = await Promise.all(
-    chunks.map((ids) =>
-      db.from('reports').select('report_id, category_id, created_at, location').in('report_id', ids)
-    )
-  );
-
-  for (const { data, error } of results) {
-    if (error) {
-      console.error('interactive-map: reports geometry', error.message, error.code);
-      continue;
-    }
-    for (const row of (data ?? []) as GeoRow[]) {
-      map.set(row.report_id, row);
-    }
-  }
-  return map;
-}
 
 function normalizeToReport(m: MetaRow, g: GeoRow | undefined): Report {
   let location_geojson = locationToGeoJSON(g?.location ?? null);
@@ -135,13 +64,56 @@ function normalizeToReport(m: MetaRow, g: GeoRow | undefined): Report {
   };
 }
 
+function chunkIds(ids: number[], size: number): number[][] {
+  const out: number[][] = [];
+  for (let i = 0; i < ids.length; i += size) out.push(ids.slice(i, i + size));
+  return out;
+}
+
 export default async function InteractiveMapPage() {
-  const supabase = await createClient();
-  const meta = await fetchAllMeta(supabase);
+  // Try cached data first (uses adminClient, no cookies → page can be ISR'd)
+  let meta = await getCachedMapMeta();
+  let usedCache = !!meta;
+
+  if (!meta) {
+    const supabase = await createClient();
+    const all: MetaRow[] = [];
+    let from = 0;
+    for (;;) {
+      const { data, error } = await supabase
+        .from('reports_with_meta')
+        .select('report_id, report_title, report_description, report_image, status, score, upvotes, downvotes')
+        .order('report_id', { ascending: true })
+        .range(from, from + 999);
+      if (error) break;
+      const batch = (data ?? []) as MetaRow[];
+      all.push(...batch);
+      if (batch.length < 1000) break;
+      from += 1000;
+    }
+    meta = all;
+  }
+
   const reportIds = meta.map((r) => r.report_id);
-  const geoById = await fetchGeoByReportId(reportIds, supabase);
+
+  let geoRecord = usedCache ? await getCachedMapGeo(reportIds) : null;
+  if (!geoRecord) {
+    const db = adminClient ?? await createClient();
+    geoRecord = {};
+    const results = await Promise.all(
+      chunkIds(reportIds, GEO_IN_CHUNK).map((ids) =>
+        db.from('reports').select('report_id, category_id, created_at, location').in('report_id', ids)
+      )
+    );
+    for (const { data } of results) {
+      for (const row of (data ?? []) as GeoRow[]) {
+        geoRecord[row.report_id] = row;
+      }
+    }
+  }
+
   const reports: Report[] = meta.map((m) =>
-    normalizeToReport(m, geoById.get(m.report_id))
+    normalizeToReport(m, geoRecord![m.report_id])
   );
 
   return (

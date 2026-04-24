@@ -172,6 +172,8 @@ export async function createReport(formData: FormData) {
   }
 
   revalidatePath('/', 'page');
+  revalidatePath('/pages/reports');
+  revalidatePath('/pages/interactive-map');
   redirect('/');
 }
 
@@ -286,7 +288,7 @@ export async function setReportVote(
   // Do not revalidate here: it triggers an immediate RSC refetch. The refetched payload
   // can have stale initialUserVote (e.g. 0) while score is already updated, so the client
   // sync effect overwrites optimistic state (button goes inactive, then next click shows 2).
-  // Explore and report-detail are force-dynamic, so navigation loads fresh data.
+  // Explore and report-detail are dynamically rendered, so navigation loads fresh data.
   return {};
 }
 

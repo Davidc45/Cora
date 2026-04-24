@@ -33,14 +33,28 @@ const nextConfig: NextConfig = {
       {
         source: '/sw.js',
         headers: [
-          // Ensure the service worker is served as JavaScript and is not cached aggressively;
-          // this allows updates to take effect quickly during development and deployments.
           { key: 'Content-Type', value: 'application/javascript; charset=utf-8' },
           { key: 'Cache-Control', value: 'no-store, max-age=0' },
-          // Allow the worker to control the entire origin (`/`) instead of just `/sw.js`'s path.
           { key: 'Service-Worker-Allowed', value: '/' },
-          // Keep the SW script extremely locked down; it runs in a powerful context.
           { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self'" },
+        ],
+      },
+      {
+        source: '/assets/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
+        source: '/icons/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
     ];

@@ -4,8 +4,7 @@ import ExploreListClient from './report-list-client';
 import { adminClient } from '@/lib/supabase/admin';
 import { locationToGeoJSON } from '@/lib/mapLocation';
 import { reverseGeocodeCity } from '@/lib/reverse-geocode';
-
-export const dynamic = 'force-dynamic';
+import { getCachedAllReports, getCachedCommentCounts } from '@/lib/data-cache';
 
 type GeoRow = { report_id: number; location: unknown | null };
 
@@ -39,31 +38,38 @@ async function fetchLocationsByReportId(
 export default async function Explore() {
   const supabase = await createClient();
 
-  // Fetch reports and auth user concurrently — neither depends on the other.
-  const [{ data: reports }, { data: { user } }] = await Promise.all([
-    supabase
-      .from('reports_with_meta_updated')
-      .select('*')
-      .order('report_id', { ascending: false }),
+  // Use cached reports when adminClient is available; fall back to session client.
+  const [cachedReports, { data: { user } }] = await Promise.all([
+    getCachedAllReports(),
     supabase.auth.getUser(),
   ]);
 
-  const userId = user?.id ?? null;
-  const reportIds = reports?.map((r) => r.report_id) ?? [];
+  const reports = cachedReports ?? (
+    await supabase
+      .from('reports_with_meta_updated')
+      .select('*')
+      .order('report_id', { ascending: false })
+  ).data;
 
-  // Fetch phone verification and comment counts concurrently.
-  const [profileResult, commentCounts] = await Promise.all([
+  const userId = user?.id ?? null;
+  const reportIds = reports?.map((r: any) => r.report_id) ?? [];
+
+  // Use cached comment counts; fall back to uncached version.
+  const [profileResult, cachedCounts] = await Promise.all([
     userId
       ? supabase.from('profiles').select('phone_verified').eq('id', userId).maybeSingle()
       : Promise.resolve({ data: null }),
-    reportIds.length ? getReportCommentCounts(reportIds) : Promise.resolve({}),
+    reportIds.length ? getCachedCommentCounts(reportIds) : Promise.resolve({}),
   ]);
+
+  const commentCounts = cachedCounts ?? (
+    reportIds.length ? await getReportCommentCounts(reportIds) : {}
+  );
 
   const phoneVerified = profileResult.data?.phone_verified === true;
 
   const locationById = await fetchLocationsByReportId(reportIds, supabase);
   const cityById = new Map<number, string>();
-  // Nominatim is rate-limited; keep this conservative.
   const MAX_GEOCODE = 30;
   for (const report of (reports ?? []).slice(0, MAX_GEOCODE) as any[]) {
     const loc = locationById.get(report.report_id);
