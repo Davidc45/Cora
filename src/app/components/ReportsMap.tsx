@@ -277,7 +277,7 @@ export default function ReportsMap({
       if (idx < reportsToRender.length) {
         requestAnimationFrame(buildChunk);
       } else {
-        clusterer.repaint();
+        clusterer.render();
       }
     };
 
