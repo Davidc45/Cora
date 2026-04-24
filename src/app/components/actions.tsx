@@ -305,7 +305,7 @@ export async function forgotpass(formData: FormData) {
   }
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/pages/forgotpass/resetpass`
+    redirectTo: `${origin}/pages/resetpass`,
   })
 
   if (error) {
