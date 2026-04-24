@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { updateProfile, signout } from '@/app/components/actions';
 import { Avatar } from '@/app/components/client-components';
 import AccountNotificationToggle from './account-notification-toggle';
+import { postImage } from '@/app/components/cfhelpers';
+import { useSearchParams } from 'next/navigation';
 
 export function AccountCard({
   profile,
@@ -18,6 +20,8 @@ export function AccountCard({
   const [deleteImage, setDeleteImage] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const err = useSearchParams().get('err')
+  const success = useSearchParams().get('success')
 
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -49,7 +53,11 @@ export function AccountCard({
         </p>
       </div>
 
-      <form onSubmit={(e) => { if (!saving) e.preventDefault(); }}>
+      <form onSubmit={(e) => { 
+        if (!saving) e.preventDefault(); 
+        const formData = new FormData(e.currentTarget)
+        updateProfile(formData);
+      }}>
         <input type="hidden" name="uid" value={profile?.id ?? ''} />
         <input
           type="hidden"
@@ -75,20 +83,35 @@ export function AccountCard({
           </div>
           <div className="acct-avatar-name">{displayName}</div>
           {avatarPreview && (
-            <button
-              type="button"
-              onClick={handleDeleteAvatar}
-              style={{
-                marginTop: '0.35rem',
-                fontSize: '0.8rem',
-                color: '#b91c1c',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              Remove avatar
-            </button>
+            <>
+              <button
+                style={{
+                  marginTop: '0.35rem',
+                  fontSize: '0.8rem',
+                  color: '#000000',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                }} 
+                type='submit'
+              >
+                Update Avatar
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAvatar}
+                style={{
+                  marginTop: '0.35rem',
+                  fontSize: '0.8rem',
+                  color: '#b91c1c',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                Remove avatar
+              </button>
+            </>
           )}
         </div>
 
@@ -109,7 +132,11 @@ export function AccountCard({
               name="Username"
               className="acct-field__input"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => {
+                console.log('value being added: ', e.target.value)
+                setUsername(e.target.value)
+                console.log('username after change: ', username)
+              }}
               disabled={!editing}
               placeholder="New Username"
             />
@@ -134,11 +161,38 @@ export function AccountCard({
           </div>
         </div>
 
-        {/* Hidden full_name field so the existing server action still gets a value */}
+        <div className='acct-field'>
+          <label className='acct-field__label'>
+          <Image 
+            src='/assets/orange-lock.svg'
+            alt=''
+            width={15}
+            height={15}
+            className='acct-field__label-icon'
+          />
+            Update Password
+          </label>
+          <div className='acct-field__row'>
+            <input 
+              placeholder='Send a code to your email.' 
+              className='acct-field__input'
+              disabled
+            />
+            <button className='acct-edit-btn'>
+              Send
+            </button>
+          </div>
+        </div>
+
         <input
-          type="hidden"
-          name="Name"
-          value={profile?.full_name ?? displayName}
+          type='hidden'
+          name='prev-username'
+          value={profile?.username}
+        />
+        <input 
+          type='hidden'
+          name='uid'
+          value={profile?.id}
         />
       </form>
 
@@ -159,6 +213,8 @@ export function AccountCard({
           </svg>
           Sign Out
         </button>
+        { err && <div className='error'>error: {err}</div>}
+        { success && <div className='success'>success: {success}</div>}
       </div>
     </div>
   );
