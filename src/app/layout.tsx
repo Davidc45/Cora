@@ -15,6 +15,7 @@ import './styles/report-page.css';
 import './styles/account.css';
 import './styles/verify-phone.css';
 import './styles/reset-password.css';
+import './styles/resources-page.css';
 import { createClient } from "@/lib/supabase/server";
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
