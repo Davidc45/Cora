@@ -446,6 +446,12 @@
     background: #fca5a5;
 }
 
+.edit-btns {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
 /* ── Responsive ── */
 @media (max-width: 599px) {
     .acct-page {
@@ -479,5 +485,12 @@
 
     .acct-reports .report-title {
         white-space: normal;
+    }
+
+    
+
+    .edit-btns {
+        display: flex;
+        flex-direction: column;
     }
 }

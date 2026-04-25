@@ -54,49 +54,38 @@ export function AccountCard({
       </div>
 
       <form onSubmit={(e) => { 
-        if (!saving) e.preventDefault(); 
         const formData = new FormData(e.currentTarget)
         updateProfile(formData);
       }}>
-        <input type="hidden" name="uid" value={profile?.id ?? ''} />
-        <input
-          type="hidden"
-          name="oldAvatarName"
-          value={profile?.avatar_name ?? ''}
-        />
-        {deleteImage && <input type="hidden" name="removeAvatar" value="1" />}
-
-        {/* Avatar — pencil always opens file picker in one click */}
+        <input type='hidden' name='uid' value={profile?.id} />
+        <input type='hidden' name='prev-username' value={profile?.username} />
+        <input type='hidden' name='prev-image' value={profile?.image_url} />
+   
         <div className="acct-avatar-section">
           <div className="acct-avatar-wrap">
             <Avatar avatar_url={avatarSrc} />
-            <label className="acct-avatar-edit-btn" title="Change avatar">
+            <label 
+              className="acct-avatar-edit-btn" 
+              title="Change avatar" 
+              style={
+                editing ? { } :
+                {display: 'none'}
+              }>
               ✎
               <input
                 type="file"
+                id='image'
                 name="image"
                 accept="image/png, image/jpeg"
                 onChange={handleAvatarChange}
                 style={{ display: 'none' }}
+                disabled={!editing}
               />
             </label>
           </div>
           <div className="acct-avatar-name">{displayName}</div>
-          {avatarPreview && (
-            <>
-              <button
-                style={{
-                  marginTop: '0.35rem',
-                  fontSize: '0.8rem',
-                  color: '#000000',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                }} 
-                type='submit'
-              >
-                Update Avatar
-              </button>
+          {editing && (
+
               <button
                 type="button"
                 onClick={handleDeleteAvatar}
@@ -111,13 +100,12 @@ export function AccountCard({
               >
                 Remove avatar
               </button>
-            </>
           )}
         </div>
+      
 
-        {/* Username */}
-        <div className="acct-field">
-          <label className="acct-field__label">
+        <div className='acct-field'>
+          <label htmlFor='username' className='acct-field__label'>
             <Image
               src="/assets/account-page-username-icon.png"
               alt=""
@@ -127,39 +115,24 @@ export function AccountCard({
             />
             Username
           </label>
-          <div className="acct-field__row">
-            <input
-              name="Username"
-              className="acct-field__input"
-              value={username}
-              onChange={(e) => {
-                console.log('value being added: ', e.target.value)
-                setUsername(e.target.value)
-                console.log('username after change: ', username)
-              }}
-              disabled={!editing}
-              placeholder="New Username"
-            />
-            {editing ? (
-              <button
-                formAction={updateProfile}
-                className="acct-save-btn"
-                disabled={saving}
-                onClick={() => setSaving(true)}
-              >
-                {saving ? 'Saving…' : 'Save'}
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="acct-edit-btn"
-                onClick={() => setEditing(true)}
-              >
-                Edit
-              </button>
-            )}
-          </div>
+          <input 
+            id='username'
+            name='username'
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className='acct-field__input'
+            disabled={!editing}
+          />
         </div>
+
+        { editing ? 
+        <div className='edit-btns'> 
+          <button onClick={() => setEditing(!editing)} className='acct-edit-btn'>Cancel Changes</button>
+          <button type='submit' className='acct-save-btn'>Save Changes</button>
+        </div> :
+        <button onClick={() => setEditing(!editing)} className='acct-edit-btn'>Edit Profile</button>
+        
+        }
 
         <div className='acct-field'>
           <label className='acct-field__label'>
@@ -170,6 +143,8 @@ export function AccountCard({
             height={15}
             className='acct-field__label-icon'
           />
+
+          
             Update Password
           </label>
           <div className='acct-field__row'>
@@ -183,17 +158,6 @@ export function AccountCard({
             </button>
           </div>
         </div>
-
-        <input
-          type='hidden'
-          name='prev-username'
-          value={profile?.username}
-        />
-        <input 
-          type='hidden'
-          name='uid'
-          value={profile?.id}
-        />
       </form>
 
       {/* Notification toggle */}

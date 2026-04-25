@@ -181,12 +181,25 @@ updateProfile()
 */
 export async function updateProfile(formData: FormData) {
   const pfpDatabase = 'user-avatars';
-  const username = trim(formData.get('prev-username'))
+  const username = trim(formData.get('username'))
+  const prevUsername = trim(formData.get('prev-username'))
   const uid = trim(formData.get('uid'));
   const image: File =formData.get('image') as File;
   const supabase = await createClient();
 
+  console.log('image: ', image)
   console.log('username: ', username)
+  console.log('prevUsername: ', prevUsername)
+
+  if(username !== prevUsername) {
+    const { error } = await supabase 
+      .from('profiles')
+      .update({
+        username: username
+      })
+      .eq('id', uid)
+  }
+
   if(image.name !== 'undefined') {
     console.log('there is an image: ', image)
     const res = await postImage({
@@ -204,18 +217,11 @@ export async function updateProfile(formData: FormData) {
     const { error } = await supabase
       .from('profiles')
       .update({
-        username: username,
-        avatar_url: res.url,
-        avatar_name: `username-${image.name}`
+        avatar_url: res.url, 
+        avatar_name: image.name
       })
       .eq('id', uid)
-
-    if(error) {
-      console.log(`error uploading to supabase: ${error.message}`)
-    }
-  } 
-
-
+  }
 }
 
 /**
