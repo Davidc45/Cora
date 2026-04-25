@@ -457,6 +457,10 @@
 .report-dashboard__pill img {
     flex-shrink: 0;
     object-fit: contain;
+    width: 18px;
+    height: 18px;
+    max-width: 18px;
+    max-height: 18px;
 }
 
 .report-dashboard__main {

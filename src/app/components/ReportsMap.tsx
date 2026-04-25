@@ -9,26 +9,37 @@ import "../styles/map.css"; //! new
 import { getCategoryIcon, createMarkerContent } from "./markerIcons";;
 
 import {
-  CATEGORY_OPTIONS,
-  categoryToIcon,
   categoryToLabel,
   formatReportDate,
   resolveMapStatus,
   statusToColor,
 } from "./mapHelpers";
 import { ensureGoogleMapsReady } from "@/lib/googleMapsLoader";
+import {
+  matchTimeline,
+  DASHBOARD_CATEGORY_FILTERS,
+  DASHBOARD_STATUS_FILTERS,
+  DASHBOARD_TIMELINE_OPTIONS,
+  type DashboardTimeline,
+  type DashboardCategoryKey,
+  type DashboardStatusKey,
+} from "@/lib/report-dashboard";
 
-const KNOWN_CATEGORY_IDS = new Set(CATEGORY_OPTIONS.map((c) => c.id));
-
-const categorySidebarIconMapById: Record<number, string> = {
-  1: "/icons/robbery.png",
-  2: "/icons/traffic.png",
-  3: "/icons/assault.png",
-  4: "/icons/suspicious.png",
-  5: "/icons/vandalism.png",
-  6: "/icons/hazard.png",
-  7: "/icons/other.png",
+const CATEGORY_KEY_TO_ID: Record<string, number> = {
+  Assault: 3,
+  Robbery: 1,
+  Vandalism: 5,
+  Suspicious: 4,
+  Traffic: 2,
+  Hazard: 6,
+  Other: 7,
 };
+
+const CATEGORY_ID_TO_KEY: Record<number, string> = Object.fromEntries(
+  Object.entries(CATEGORY_KEY_TO_ID).map(([k, v]) => [v, k])
+);
+
+const KNOWN_CATEGORY_IDS = new Set(Object.values(CATEGORY_KEY_TO_ID));
 
 type ReportsMapProps = {
   reports: Report[];
@@ -67,22 +78,26 @@ export default function ReportsMap({
   const [predictions, setPredictions] = useState<google.maps.places.AutocompletePrediction[]>([]);
   const [showPredictions, setShowPredictions] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [timeFilter, setTimeFilter] = useState<"daily" | "weekly" | "monthly">("weekly");
+  const [timeFilter, setTimeFilter] = useState<DashboardTimeline>("all");
 
-  const [selectedCategories, setSelectedCategories] = useState<number[]>(
-    CATEGORY_OPTIONS.map((c) => c.id)
+  const [categoryFilters, setCategoryFilters] = useState<Record<DashboardCategoryKey, boolean>>(
+    () => Object.fromEntries(DASHBOARD_CATEGORY_FILTERS.map((c) => [c.key, true])) as Record<DashboardCategoryKey, boolean>
   );
 
   const [mapReady, setMapReady] = useState(false);
-  const [statusFilters, setStatusFilters] = useState({
-    supported: true,
-    unconfirmed: true,
-    disputed: true,
-  });
-
-//! this is where wrapperStyle and mapBlockStyle were 
+  const [statusFilters, setStatusFilters] = useState<Record<DashboardStatusKey, boolean>>(
+    () => Object.fromEntries(DASHBOARD_STATUS_FILTERS.map((s) => [s.key, true])) as Record<DashboardStatusKey, boolean>
+  );
 
   const filteredReports = useMemo(() => {
+    const statusAnyOn = DASHBOARD_STATUS_FILTERS.some((f) => statusFilters[f.key]);
+    const statusAllOn = DASHBOARD_STATUS_FILTERS.every((f) => statusFilters[f.key]);
+    const statusActive = statusAnyOn && !statusAllOn;
+
+    const catAnyOn = DASHBOARD_CATEGORY_FILTERS.some((f) => categoryFilters[f.key]);
+    const catAllOn = DASHBOARD_CATEGORY_FILTERS.every((f) => categoryFilters[f.key]);
+    const catActive = catAnyOn && !catAllOn;
+
     return (reports ?? []).filter((r) => {
       const coords = r.location_geojson?.coordinates;
       if (!coords || coords.length !== 2) return false;
@@ -90,34 +105,23 @@ export default function ReportsMap({
       const [lng, lat] = coords;
       if (!Number.isFinite(lng) || !Number.isFinite(lat)) return false;
 
-      if (
-        r.category_id != null &&
-        KNOWN_CATEGORY_IDS.has(r.category_id) &&
-        !selectedCategories.includes(r.category_id)
-      ) {
-        return false;
+      if (r.created_at && !matchTimeline(r.created_at, timeFilter)) return false;
+
+      if (statusActive) {
+        const status = resolveMapStatus(r.score, r.status);
+        if (status === "supported" && !statusFilters.supported) return false;
+        if (status === "unconfirmed" && !statusFilters.unconfirmed) return false;
+        if (status === "disputed" && !statusFilters.disputed) return false;
       }
 
-      const status = resolveMapStatus(r.score, r.status);
-      if (status === "supported" && !statusFilters.supported) return false;
-      if (status === "unconfirmed" && !statusFilters.unconfirmed) return false;
-      if (status === "disputed" && !statusFilters.disputed) return false;
-
-      if (!r.created_at) return false;
-
-      const createdAt = new Date(r.created_at);
-      const now = new Date();
-
-      const diffMs = now.getTime() - createdAt.getTime();
-      const diffDays = diffMs / (1000 * 60 * 60 * 24);
-
-      if (timeFilter === "daily" && diffDays > 1) return false;
-      if (timeFilter === "weekly" && diffDays > 7) return false;
-      if (timeFilter === "monthly" && diffDays > 30) return false;
+      if (catActive && r.category_id != null) {
+        const key = CATEGORY_ID_TO_KEY[r.category_id];
+        if (key && !categoryFilters[key as DashboardCategoryKey]) return false;
+      }
 
       return true;
     });
-  }, [reports, selectedCategories, statusFilters, timeFilter]);
+  }, [reports, categoryFilters, statusFilters, timeFilter]);
 
   useEffect(() => {
     if (!googleMapsApiKey) return;
@@ -349,30 +353,26 @@ export default function ReportsMap({
     });
   }
 
-  function toggleCategory(categoryId: number) {
-    setSelectedCategories((prev) => {
-      if (prev.includes(categoryId)) {
-        return prev.filter((id) => id !== categoryId);
-      }
-      return [...prev, categoryId];
-    });
+  function toggleCategory(key: DashboardCategoryKey) {
+    setCategoryFilters((prev) => ({ ...prev, [key]: !prev[key] }));
   }
 
-  function toggleStatus(key: "supported" | "unconfirmed" | "disputed") {
-    setStatusFilters((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
+  function toggleStatus(key: DashboardStatusKey) {
+    setStatusFilters((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
+
+  function toggleTimeline(next: Exclude<DashboardTimeline, "all">) {
+    setTimeFilter((prev) => (prev === next ? "all" : next));
   }
 
   function resetAllFilters() {
-    setSelectedCategories(CATEGORY_OPTIONS.map((c) => c.id));
-    setStatusFilters({
-      supported: true,
-      unconfirmed: true,
-      disputed: true,
-    });
-    setTimeFilter("weekly");
+    setCategoryFilters(
+      Object.fromEntries(DASHBOARD_CATEGORY_FILTERS.map((c) => [c.key, true])) as Record<DashboardCategoryKey, boolean>
+    );
+    setStatusFilters(
+      Object.fromEntries(DASHBOARD_STATUS_FILTERS.map((s) => [s.key, true])) as Record<DashboardStatusKey, boolean>
+    );
+    setTimeFilter("all");
   }
   function handleSearchInput(value: string) {
     setSearchQuery(value);
@@ -481,32 +481,17 @@ export default function ReportsMap({
             </div>
 
             <div className="option-grid">
-              <button
-                type="button"
-                className={`filter-chip ${timeFilter === "weekly" ? "selected" : ""}`}
-                onClick={() => setTimeFilter("weekly")}
-              >
-                <NextImage src="/icons/timeline.png" alt="" width={18} height={18} className="filter-row-icon" />
-                <span>Today</span>
-              </button>
-
-              <button
-                type="button"
-                className={`filter-chip ${timeFilter === "daily" ? "selected" : ""}`}
-                onClick={() => setTimeFilter("daily")}
-              >
-                <NextImage src="/icons/timeline.png" alt="" width={18} height={18} className="filter-row-icon" />
-                <span>Past Week</span>
-              </button>
-
-              <button
-                type="button"
-                className={`filter-chip ${timeFilter === "monthly" ? "selected" : ""}`}
-                onClick={() => setTimeFilter("monthly")}
-              >
-                <NextImage src="/icons/timeline.png" alt="" width={18} height={18} className="filter-row-icon" />
-                <span>Past Month</span>
-              </button>
+              {DASHBOARD_TIMELINE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  className={`filter-chip ${timeFilter === opt.id ? "selected" : ""}`}
+                  onClick={() => toggleTimeline(opt.id)}
+                >
+                  <NextImage src={opt.iconSrc} alt="" width={18} height={18} className="filter-row-icon" />
+                  <span>{opt.label}</span>
+                </button>
+              ))}
             </div>
           </div>
 
@@ -517,32 +502,17 @@ export default function ReportsMap({
             </div>
 
             <div className="option-grid">
-              <button
-                type="button"
-                className={`filter-chip ${statusFilters.supported ? "selected" : ""}`}
-                onClick={() => toggleStatus("supported")}
-              >
-                <NextImage src="/icons/communitySupported.png" alt="" width={18} height={18} className="filter-row-icon" />
-                <span>Supported</span>
-              </button>
-
-              <button
-                type="button"
-                className={`filter-chip ${statusFilters.unconfirmed ? "selected" : ""}`}
-                onClick={() => toggleStatus("unconfirmed")}
-              >
-                <NextImage src="/icons/unconfirmed.png" alt="" width={18} height={18} className="filter-row-icon" />
-                <span>Unconfirmed</span>
-              </button>
-
-              <button
-                type="button"
-                className={`filter-chip ${statusFilters.disputed ? "selected" : ""}`}
-                onClick={() => toggleStatus("disputed")}
-              >
-                <NextImage src="/icons/disputed.png" alt="" width={18} height={18} className="filter-row-icon" />
-                <span>Disputed</span>
-              </button>
+              {DASHBOARD_STATUS_FILTERS.map((opt) => (
+                <button
+                  key={opt.key}
+                  type="button"
+                  className={`filter-chip ${statusFilters[opt.key] ? "selected" : ""}`}
+                  onClick={() => toggleStatus(opt.key)}
+                >
+                  <NextImage src={opt.iconSrc} alt="" width={18} height={18} className="filter-row-icon" />
+                  <span>{opt.label}</span>
+                </button>
+              ))}
             </div>
           </div>
 
@@ -553,27 +523,17 @@ export default function ReportsMap({
             </div>
 
             <div className="category-grid">
-              {CATEGORY_OPTIONS.map((category) => {
-                const isSelected = selectedCategories.includes(category.id);
-
-                return (
-                  <button
-                    key={category.id}
-                    type="button"
-                    className={`filter-chip ${isSelected ? "selected" : ""}`}
-                    onClick={() => toggleCategory(category.id)}
-                  >
-                    <NextImage
-                      src={categorySidebarIconMapById[category.id] ?? "/icons/other.png"}
-                      alt=""
-                      width={18}
-                      height={18}
-                      className="filter-row-icon"
-                    />
-                    <span>{category.label}</span>
-                  </button>
-                );
-              })}
+              {DASHBOARD_CATEGORY_FILTERS.map((opt) => (
+                <button
+                  key={opt.key}
+                  type="button"
+                  className={`filter-chip ${categoryFilters[opt.key] ? "selected" : ""}`}
+                  onClick={() => toggleCategory(opt.key)}
+                >
+                  <NextImage src={opt.iconSrc} alt="" width={18} height={18} className="filter-row-icon" />
+                  <span>{opt.label}</span>
+                </button>
+              ))}
             </div>
           </div>
 

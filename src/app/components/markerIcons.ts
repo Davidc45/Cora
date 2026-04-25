@@ -1,18 +1,18 @@
 // src/app/components/markerIcons.ts
 
 export const categoryIconMap: Record<number, string> = {
-    1: "/icons/robbery.png",
-    2: "/icons/traffic.png",
-    3: "/icons/assault.png",
-    4: "/icons/suspicious.png",
-    5: "/icons/vandalism.png",
-    6: "/icons/hazard.png",
-    7: "/icons/other.png",
+    1: "/assets/report-robbery-icon.png",
+    2: "/assets/report-traffic-icon.png",
+    3: "/assets/report-assault-icon.png",
+    4: "/assets/report-suspicious-icon.png",
+    5: "/assets/report-vandalism-icon.png",
+    6: "/assets/report-hazard-icon.png",
+    7: "/assets/report-other-icon.png",
 };
 
 export function getCategoryIcon(categoryId: number | null | undefined): string {
-    if (!categoryId) return "/icons/other.png";
-    return categoryIconMap[categoryId] ?? "/icons/other.png";
+    if (!categoryId) return "/assets/report-other-icon.png";
+    return categoryIconMap[categoryId] ?? "/assets/report-other-icon.png";
 }
 
 export function createMarkerContent(iconUrl: string, color: string): HTMLDivElement {
