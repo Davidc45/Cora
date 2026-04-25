@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { updateProfile, signout } from '@/app/components/actions';
 import { Avatar } from '@/app/components/client-components';
@@ -19,9 +19,10 @@ export function AccountCard({
   const [editing, setEditing] = useState(false);
   const [deleteImage, setDeleteImage] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
+  // const [saving, setSaving] = useState(false);
   const err = useSearchParams().get('err')
   const success = useSearchParams().get('success')
+
 
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -36,6 +37,11 @@ export function AccountCard({
     setAvatarPreview(null);
   }
 
+  function handleRevertAvatar() {
+    setDeleteImage(false);
+    setAvatarPreview(profile?.avatar_url);
+  }
+
   function confirmSignout() {
     if (window.confirm('Log out?')) signout();
   }
@@ -43,6 +49,14 @@ export function AccountCard({
   const avatarSrc = deleteImage
     ? null
     : avatarPreview ?? profile?.avatar_url ?? null;
+
+  useEffect(() => {
+    console.log('editing clicked: ', editing)
+    if(!editing) {
+      handleRevertAvatar();
+      setUsername(profile?.username)
+    }
+  }, [editing]);
 
   return (
     <div className="acct-card">
@@ -149,6 +163,9 @@ export function AccountCard({
           </label>
           <div className='acct-field__row'>
             <input 
+              name='text'
+              id='text'
+              value='Send a code to your email.'
               placeholder='Send a code to your email.' 
               className='acct-field__input'
               disabled

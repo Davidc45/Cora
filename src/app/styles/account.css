@@ -169,7 +169,9 @@
     cursor: pointer;
     white-space: nowrap;
     transition: background 0.14s ease;
+    
 }
+
 
 .acct-save-btn:hover {
     background: #dd7d00;
