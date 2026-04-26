@@ -69,7 +69,8 @@ export function AccountCard({
       }}>
         <input type='hidden' name='uid' value={profile?.id} />
         <input type='hidden' name='prev-username' value={profile?.username} />
-        <input type='hidden' name='prev-image' value={profile?.image_url} />
+        <input type='hidden' name='img-name' value={profile?.avatar_name ?? 'empty'} />
+        <input type='hidden' name='delete-img' value={deleteImage ? 'delete' : 'keep'} />
    
         <div className="acct-avatar-section">
           <div className="acct-avatar-wrap">

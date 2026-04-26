@@ -11,7 +11,7 @@
  *
  */
 
-import { revalidatePath } from 'next/cache'
+import { refresh, revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
@@ -181,15 +181,13 @@ updateProfile()
 */
 export async function updateProfile(formData: FormData) {
   const pfpDatabase = 'user-avatars';
-  const username = trim(formData.get('username'))
-  const prevUsername = trim(formData.get('prev-username'))
+  const username = trim(formData.get('username'));
+  const prevUsername = trim(formData.get('prev-username'));
   const uid = trim(formData.get('uid'));
-  const image: File =formData.get('image') as File;
+  const image: File = formData.get('image') as File;
+  const imgName = trim(formData.get('img-name'));
+  const deleteImg = trim(formData.get('delete-img'));
   const supabase = await createClient();
-
-  console.log('image: ', image)
-  console.log('username: ', username)
-  console.log('prevUsername: ', prevUsername)
 
   if(username !== prevUsername) {
     const { error } = await supabase 
@@ -218,12 +216,42 @@ export async function updateProfile(formData: FormData) {
       .from('profiles')
       .update({
         avatar_url: res.url, 
-        avatar_name: image.name
+        avatar_name: `${username}-${image.name}`
       })
       .eq('id', uid)
+
+    if(error) {
+      console.log('error: ', error.message)
+      redirect(`/pages/account?err=${error.message}`)
+    }
+  }
+
+  if(deleteImg === 'delete' && image) {
+    console.log('attempting to delete img')
+    const res = await deleteImage({
+      database: pfpDatabase,
+      image: imgName
+    })
+    
+    if(res !== 200) {
+      redirect('/pages/account?err?Cloudflare could not delete the image.')
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        avatar_name: null,
+        avatar_url: null,
+      })
+      .eq('id', uid)
+
+    if(error) {
+      redirect('/pages/account?err?Supabase did not properly delete avatar.')
+    }
   }
 
   revalidatePath('/pages/account')
+  refresh()
   redirect('/pages/account?success=Profile Updated');
 }
 
