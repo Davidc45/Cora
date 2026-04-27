@@ -7,6 +7,11 @@
     font-family: var(--font-alexandria), ui-sans-serif, system-ui, sans-serif;
 }
 
+.acct-form-container {
+    display: flex;
+    flex-direction: column;
+}
+
 .acct-back-link {
     display: inline-flex;
     align-items: center;

@@ -31,9 +31,10 @@ export function AccountCard({
     setAvatarPreview(null);
   }
 
-  function handleRevertAvatar() {
+  function handleRevertChanges() {
     setDeleteImage(false);
     setAvatarPreview(profile?.avatar_url);
+    setUsername(profile?.username ?? '')
   }
 
   function confirmSignout() {
@@ -44,13 +45,13 @@ export function AccountCard({
     ? null
     : avatarPreview ?? profile?.avatar_url ?? null;
 
-  useEffect(() => {
-    console.log('editing clicked: ', editing)
-    if(!editing) {
-      handleRevertAvatar();
-      setUsername(profile?.username)
-    }
-  }, [editing]);
+  // useEffect(() => {
+  //   console.log('editing clicked: ', editing)
+  //   if(!editing) {
+  //     handleRevertAvatar();
+  //     setUsername(profile?.username)
+  //   }
+  // }, [editing]);
 
   return (
     <div className="acct-card">
@@ -61,12 +62,15 @@ export function AccountCard({
         </p>
       </div>
 
-      <form onSubmit={(e) => { 
-        e.preventDefault();
-        setEditing(false);
-        const formData = new FormData(e.currentTarget)
-        updateProfile(formData);
-      }}>
+      <form 
+        onSubmit={(e) => { 
+          e.preventDefault()
+          setEditing(false);
+          const formData = new FormData(e.currentTarget)
+          updateProfile(formData);
+        }}
+        className='acct-form-container'
+      >
         <input type='hidden' name='uid' value={profile?.id} />
         <input type='hidden' name='prev-username' value={profile?.username} />
         <input type='hidden' name='img-name' value={profile?.avatar_name ?? 'empty'} />
@@ -138,7 +142,12 @@ export function AccountCard({
 
         { editing ? 
         <div className='edit-btns'> 
-          <button onClick={() => setEditing(!editing)} className='acct-edit-btn'>Cancel Changes</button>
+          <button 
+            onClick={() => {
+              setEditing(!editing)
+              handleRevertChanges()
+            }} 
+            className='acct-edit-btn'>Cancel Changes</button>
           <button type='submit' className='acct-save-btn'>Save Changes</button>
         </div> :
         <button onClick={() => setEditing(!editing)} className='acct-edit-btn'>Edit Profile</button>
