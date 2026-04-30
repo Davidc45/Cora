@@ -25,6 +25,30 @@ export default function AccountNotificationToggle() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  async function waitForActiveWorker(registration: ServiceWorkerRegistration) {
+    if (registration.active) return registration;
+
+    const candidate = registration.installing || registration.waiting;
+    if (!candidate) return null;
+
+    await new Promise<void>((resolve) => {
+      const onStateChange = () => {
+        if (candidate.state === 'activated') {
+          candidate.removeEventListener('statechange', onStateChange);
+          resolve();
+        }
+      };
+      candidate.addEventListener('statechange', onStateChange);
+      setTimeout(() => {
+        candidate.removeEventListener('statechange', onStateChange);
+        resolve();
+      }, 4000);
+    });
+
+    const refreshed = await navigator.serviceWorker.getRegistration('/');
+    return refreshed?.active ? refreshed : null;
+  }
+
   async function hydrateExistingSubscription() {
     try {
       const registration = await getOrCreateRegistration();
@@ -39,9 +63,12 @@ export default function AccountNotificationToggle() {
   async function getOrCreateRegistration() {
     if (!('serviceWorker' in navigator) || !window.isSecureContext) return null;
     const existing = await navigator.serviceWorker.getRegistration('/');
-    if (existing) return existing;
+    if (existing?.active) return existing;
     try {
-      return await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+      const created = existing ?? await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+      const ready = await navigator.serviceWorker.ready;
+      if (ready?.active) return ready;
+      return await waitForActiveWorker(created);
     } catch {
       return null;
     }
