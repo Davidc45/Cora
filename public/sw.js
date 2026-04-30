@@ -68,6 +68,13 @@ function isApiOrAction(url) {
     || path.startsWith('/auth/');
 }
 
+function isNextDataLikeRequest(request, url) {
+  var accept = request.headers.get('accept') || '';
+  var hasRscHeader = request.headers.has('rsc');
+  var hasRscQuery = url.searchParams && url.searchParams.has('_rsc');
+  return accept.indexOf('text/x-component') !== -1 || hasRscHeader || hasRscQuery;
+}
+
 function isNavigationRequest(request) {
   return request.mode === 'navigate'
     || (request.method === 'GET' && request.headers.get('accept') && request.headers.get('accept').indexOf('text/html') !== -1);
@@ -82,6 +89,9 @@ self.addEventListener('fetch', function (event) {
 
   // API routes and server actions: network-only
   if (url.origin === self.location.origin && isApiOrAction(url)) return;
+
+  // Next.js data/RSC/prefetch requests: network-only (avoid synthetic offline 503s)
+  if (url.origin === self.location.origin && isNextDataLikeRequest(event.request, url)) return;
 
   // Static assets from our origin: cache-first
   if (url.origin === self.location.origin && isStaticAsset(url)) {
@@ -146,7 +156,7 @@ self.addEventListener('fetch', function (event) {
             if (response.ok) cache.put(event.request, response.clone());
             return response;
           }).catch(function () {
-            return cached || new Response('', { status: 503, statusText: 'Offline' });
+            return cached || Response.error();
           });
           return cached || networkFetch;
         });

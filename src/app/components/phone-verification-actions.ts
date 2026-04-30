@@ -44,7 +44,12 @@ export async function sendPhoneOtp(phone: string): Promise<{ error?: string }> {
     return { error: 'You must be signed in to verify your phone number.' };
   }
 
-  const e164 = toE164(phone);
+  let e164: string;
+  try {
+    e164 = toE164(phone);
+  } catch {
+    return { error: 'Please enter a valid phone number (e.g. +1 234 567 8900).' };
+  }
   if (!E164_REGEX.test(e164)) {
     return { error: 'Please enter a valid phone number (e.g. +1 234 567 8900).' };
   }
@@ -69,9 +74,14 @@ export async function sendPhoneOtp(phone: string): Promise<{ error?: string }> {
   });
 
   if (error) {
+    const lower = error.message?.toLowerCase() ?? '';
     const msg =
-      error.message?.toLowerCase().includes('rate')
+      lower.includes('rate')
         ? 'Please wait a minute before requesting another code.'
+        : lower.includes('service unavailable') ||
+          lower.includes('provider') ||
+          lower.includes('twilio')
+        ? 'SMS verification is temporarily unavailable. Please try again in a few minutes.'
         : error.message || 'Failed to send code. Try again.';
     return { error: msg };
   }
@@ -89,7 +99,12 @@ export async function verifyPhoneOtp(
 ): Promise<{ error?: string }> {
   const supabase = await createClient();
 
-  const e164 = toE164(phone.trim());
+  let e164: string;
+  try {
+    e164 = toE164(phone.trim());
+  } catch {
+    return { error: 'Please enter a valid phone number and request a new code.' };
+  }
   const trimmedToken = token.trim().replace(/\s/g, '');
   if (!trimmedToken || trimmedToken.length < 4) {
     return { error: 'Please enter the code from the SMS.' };
@@ -105,9 +120,14 @@ export async function verifyPhoneOtp(
   });
 
   if (verifyError) {
+    const lower = verifyError.message?.toLowerCase() ?? '';
     const msg =
-      verifyError.message?.toLowerCase().includes('expired')
+      lower.includes('expired')
         ? 'Code expired. Please request a new code.'
+        : lower.includes('service unavailable') ||
+          lower.includes('provider') ||
+          lower.includes('twilio')
+        ? 'SMS verification is temporarily unavailable. Please try again in a few minutes.'
         : verifyError.message || 'Invalid code. Try again.';
     return { error: msg };
   }

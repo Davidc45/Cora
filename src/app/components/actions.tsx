@@ -115,6 +115,10 @@ export async function login(formData: FormData) {
 export async function signup(formData: FormData) {
   const origin = (await headers()).get('origin')
   const supabase = await createClient()
+  const emailRedirectTo = origin
+    ? `${origin}/auth/callback?next=/`
+    : undefined
+
 
   const rawUsername = trim(formData.get('username'))
   const email = trim(formData.get('email'))
@@ -158,7 +162,7 @@ export async function signup(formData: FormData) {
         username: rawUsername,
         full_name: rawUsername,
       },
-      emailRedirectTo: `${origin}`
+      emailRedirectTo
     },
   })
 
