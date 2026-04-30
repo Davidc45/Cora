@@ -184,14 +184,16 @@ updateProfile()
 - update the user's information
 */
 export async function updateProfile(formData: FormData) {
-  const pfpDatabase = 'user-avatars';
   const username = trim(formData.get('username'));
   const prevUsername = trim(formData.get('prev-username'));
-  const uid = trim(formData.get('uid'));
-  const image: File = formData.get('image') as File;
-  const imgName = trim(formData.get('img-name'));
-  const deleteImg = trim(formData.get('delete-img'));
   const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+  if (userError || !user) {
+    redirect('/pages/login?err=Please sign in again.');
+  }
 
   if(username !== prevUsername) {
     const { error } = await supabase 
@@ -199,7 +201,7 @@ export async function updateProfile(formData: FormData) {
       .update({
         username: username
       })
-      .eq('id', uid)
+      .eq('id', user.id)
 
     if (error) {
       redirect(`/pages/account?err=${encodeURIComponent(error.message)}`);
@@ -210,60 +212,106 @@ export async function updateProfile(formData: FormData) {
     });
   }
 
-  if(image.name !== 'undefined') {
-    console.log('there is an image: ', image)
-    const res = await postImage({
-      database: pfpDatabase,
-      image: image,
-      rid: null,
-      username: username
-    })
-
-    if(res.status !== 200) {
-      console.log('error uploading to database')
-      redirect(`/pages/account?err=${res.message}`)
-    }
-
-    const { error } = await supabase
-      .from('profiles')
-      .update({
-        avatar_url: res.url, 
-        avatar_name: `${username}-${image.name}`
-      })
-      .eq('id', uid)
-
-    if(error) {
-      console.log('error: ', error.message)
-      redirect(`/pages/account?err=${error.message}`)
-    }
-  }
-
-  if(deleteImg === 'delete' && image) {
-    console.log('attempting to delete img')
-    const res = await deleteImage({
-      database: pfpDatabase,
-      image: imgName
-    })
-    
-    if(res !== 200) {
-      redirect('/pages/account?err?Cloudflare could not delete the image.')
-    }
-
-    const { error } = await supabase
-      .from('profiles')
-      .update({
-        avatar_name: null,
-        avatar_url: null,
-      })
-      .eq('id', uid)
-
-    if(error) {
-      redirect('/pages/account?err?Supabase did not properly delete avatar.')
-    }
-  }
-
   revalidatePath('/', 'layout')
   redirect('/pages/account?success=Profile Updated');
+}
+
+/**
+ * Upload and persist a new avatar immediately (independent of username edits).
+ */
+export async function uploadProfileAvatar(formData: FormData): Promise<{
+  error?: string;
+  avatarUrl?: string;
+  avatarName?: string;
+}> {
+  const image = formData.get('image');
+  if (!(image instanceof File) || image.size <= 0 || !image.name || image.name === 'undefined') {
+    return { error: 'Please choose a valid image file.' };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+  if (userError || !user) {
+    return { error: 'You must be logged in to update your avatar.' };
+  }
+
+  const avatarKeyBase = user.id;
+  const upload = await postImage({
+    database: 'user-avatars',
+    image,
+    rid: null,
+    username: avatarKeyBase,
+  });
+  if (upload.status !== 200 || !upload.url) {
+    return { error: upload.message || 'Failed to upload avatar.' };
+  }
+
+  const avatarName = `${avatarKeyBase}-${image.name}`;
+  const { error: updateError } = await supabase
+    .from('profiles')
+    .update({
+      avatar_url: upload.url,
+      avatar_name: avatarName,
+    })
+    .eq('id', user.id);
+  if (updateError) {
+    return { error: updateError.message };
+  }
+
+  revalidatePath('/', 'layout');
+  revalidatePath('/pages/account');
+  return {
+    avatarUrl: upload.url,
+    avatarName,
+  };
+}
+
+/**
+ * Remove the current avatar immediately.
+ */
+export async function removeProfileAvatar(): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+  if (userError || !user) {
+    return { error: 'You must be logged in to remove your avatar.' };
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('avatar_name')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (profile?.avatar_name) {
+    const deleteStatus = await deleteImage({
+      database: 'user-avatars',
+      image: profile.avatar_name,
+    });
+    if (deleteStatus !== 200) {
+      return { error: 'Cloudflare could not delete the avatar image.' };
+    }
+  }
+
+  const { error: updateError } = await supabase
+    .from('profiles')
+    .update({
+      avatar_name: null,
+      avatar_url: null,
+    })
+    .eq('id', user.id);
+  if (updateError) {
+    return { error: 'Supabase did not properly clear avatar fields.' };
+  }
+
+  revalidatePath('/', 'layout');
+  revalidatePath('/pages/account');
+  return {};
 }
 
 /**

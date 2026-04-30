@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { updateProfile, signout, forgotpass } from '@/app/components/actions';
+import { useRouter } from 'next/navigation';
+import {
+  updateProfile,
+  signout,
+  forgotpass,
+  uploadProfileAvatar,
+} from '@/app/components/actions';
 import { Avatar } from '@/app/components/client-components';
 import AccountNotificationToggle from './account-notification-toggle';
 
@@ -15,29 +21,49 @@ export function AccountCard({
   displayName: string;
   email: string;
 }) {
+  const router = useRouter();
   const [username, setUsername] = useState(profile?.username ?? '');
   const [editing, setEditing] = useState(false);
-  const [deleteImage, setDeleteImage] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(profile?.avatar_url ?? null);
+  const [avatarBusy, setAvatarBusy] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const formData = new FormData();
   formData.append('email', email)
 
-  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+  useEffect(() => {
+    setAvatarUrl(profile?.avatar_url ?? null);
+  }, [profile?.avatar_url]);
+
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const inputEl = e.currentTarget;
     const file = e.target.files?.[0];
-    if (file) {
-      setAvatarPreview(URL.createObjectURL(file));
-      setDeleteImage(false);
+    if (!file) return;
+
+    const localPreview = URL.createObjectURL(file);
+    setAvatarPreview(localPreview);
+    setAvatarBusy(true);
+
+    try {
+      const avatarForm = new FormData();
+      avatarForm.append('image', file);
+      const result = await uploadProfileAvatar(avatarForm);
+      if (result.error) {
+        window.alert(result.error);
+        setAvatarPreview(null);
+        return;
+      }
+      setAvatarUrl(result.avatarUrl ?? null);
+      setAvatarPreview(null);
+      router.refresh();
+    } finally {
+      URL.revokeObjectURL(localPreview);
+      setAvatarBusy(false);
+      inputEl.value = '';
     }
   }
 
-  function handleDeleteAvatar() {
-    setDeleteImage(true);
-    setAvatarPreview(null);
-  }
-
   function handleRevertChanges() {
-    setDeleteImage(false);
-    setAvatarPreview(profile?.avatar_url);
+    setAvatarPreview(null);
     setUsername(profile?.username ?? '')
   }
 
@@ -45,9 +71,7 @@ export function AccountCard({
     if (window.confirm('Log out?')) signout();
   }
 
-  const avatarSrc = deleteImage
-    ? null
-    : avatarPreview ?? profile?.avatar_url ?? null;
+  const avatarSrc = avatarPreview ?? avatarUrl ?? null;
 
   // useEffect(() => {
   //   console.log('editing clicked: ', editing)
@@ -75,10 +99,7 @@ export function AccountCard({
         }}
         className='acct-form-container'
       >
-        <input type='hidden' name='uid' value={profile?.id} />
         <input type='hidden' name='prev-username' value={profile?.username} />
-        <input type='hidden' name='img-name' value={profile?.avatar_name ?? 'empty'} />
-        <input type='hidden' name='delete-img' value={deleteImage ? 'delete' : 'keep'} />
         {/* <input type='hidden' name='email' value={email} /> */}
    
         <div className="acct-avatar-section">
@@ -86,11 +107,7 @@ export function AccountCard({
             <Avatar avatar_url={avatarSrc} />
             <label 
               className="acct-avatar-edit-btn" 
-              title="Change avatar" 
-              style={
-                editing ? { } :
-                {display: 'none'}
-              }>
+              title="Change avatar">
               ✎
               <input
                 type="file"
@@ -99,27 +116,15 @@ export function AccountCard({
                 accept="image/png, image/jpeg"
                 onChange={handleAvatarChange}
                 style={{ display: 'none' }}
-                disabled={!editing}
+                disabled={avatarBusy}
               />
             </label>
           </div>
           <div className="acct-avatar-name">{displayName}</div>
-          {editing && (
-
-              <button
-                type="button"
-                onClick={handleDeleteAvatar}
-                style={{
-                  marginTop: '0.35rem',
-                  fontSize: '0.8rem',
-                  color: '#b91c1c',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                Remove avatar
-              </button>
+          {avatarBusy && (
+            <div style={{ marginTop: '0.35rem', fontSize: '0.8rem', opacity: 0.75 }}>
+              Updating avatar...
+            </div>
           )}
         </div>
       

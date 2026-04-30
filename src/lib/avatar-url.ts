@@ -15,6 +15,19 @@ export function normalizeAvatarUrl(value: unknown): string | null {
   return t;
 }
 
+function extractAvatarKeyFromUrl(value: string): string | null {
+  try {
+    const url = new URL(value);
+    const rawPath = decodeURIComponent(url.pathname || '').replace(/^\/+/, '');
+    if (!rawPath) return null;
+    // Presigned R2 URLs can include the bucket segment in pathname.
+    const withoutBucket = rawPath.replace(/^(user-avatars|cora-image-database)\//, '');
+    return withoutBucket || null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Resolve a profile avatar to a stable display URL.
  * Prefer non-presigned values. If presigned, try rebuilding from avatar_name.
@@ -26,11 +39,15 @@ export function resolveProfileAvatarUrl(args: {
   publicBase: string | null | undefined;
 }): string | null {
   const normalized = normalizeAvatarUrl(args.avatarUrl);
-  if (!normalized) return null;
+  const avatarName =
+    typeof args.avatarName === 'string' && args.avatarName.trim()
+      ? args.avatarName.trim()
+      : null;
+  if (!normalized) {
+    return buildPublicR2Url(args.publicBase, avatarName);
+  }
   if (!isPresignedUrl(normalized)) return normalized;
-  const rebuilt = buildPublicR2Url(
-    args.publicBase,
-    typeof args.avatarName === 'string' ? args.avatarName : null
-  );
+  const keyFromUrl = extractAvatarKeyFromUrl(normalized);
+  const rebuilt = buildPublicR2Url(args.publicBase, avatarName ?? keyFromUrl);
   return rebuilt ?? normalized;
 }

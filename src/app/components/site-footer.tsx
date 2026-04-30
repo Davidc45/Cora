@@ -77,7 +77,7 @@ export default function SiteFooter({
                   <Link href="/pages/terms">Terms</Link>
                 </li>
                 <li>
-                  <Link href="/pages/help">Help</Link>
+                  <Link href="/pages/help">App Help</Link>
                 </li>
               </ul>
             </nav>
