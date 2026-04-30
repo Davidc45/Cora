@@ -358,6 +358,7 @@
   box-shadow: var(--cora-nav-shadow);
   border: 1px solid var(--cora-nav-border);
   z-index: 1001;
+  overflow: hidden;
 }
 
 .site-header-user-name {
