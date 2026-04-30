@@ -27,11 +27,23 @@ export default function AccountNotificationToggle() {
 
   async function hydrateExistingSubscription() {
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await getOrCreateRegistration();
+      if (!registration) return;
       const existing = await registration.pushManager.getSubscription();
       if (existing) setIsSubscribed(true);
     } catch {
       /* ignore */
+    }
+  }
+
+  async function getOrCreateRegistration() {
+    if (!('serviceWorker' in navigator) || !window.isSecureContext) return null;
+    const existing = await navigator.serviceWorker.getRegistration('/');
+    if (existing) return existing;
+    try {
+      return await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+    } catch {
+      return null;
     }
   }
 
@@ -72,7 +84,12 @@ export default function AccountNotificationToggle() {
         setLoading(false);
         return;
       }
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await getOrCreateRegistration();
+      if (!registration) {
+        setError('Service worker is not available. Refresh and try again.');
+        setLoading(false);
+        return;
+      }
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(publicKey),
@@ -100,7 +117,12 @@ export default function AccountNotificationToggle() {
     setLoading(true);
     setError(null);
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await getOrCreateRegistration();
+      if (!registration) {
+        setError('Service worker is not available.');
+        setLoading(false);
+        return;
+      }
       const existing = await registration.pushManager.getSubscription();
       await existing?.unsubscribe();
       const result = await unsubscribeUser();
