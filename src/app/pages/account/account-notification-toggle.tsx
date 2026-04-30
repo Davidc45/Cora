@@ -21,12 +21,24 @@ function urlBase64ToUint8Array(base64String: string) {
 
 /**
  * Ensure an active service worker registration exists.
- * Registers /sw.js if needed and waits up to 5 s for activation.
+ * Handles "zombie" registrations (deleted/unregistered state) by
+ * clearing them and creating a fresh registration.
  */
 async function ensureActiveRegistration(): Promise<ServiceWorkerRegistration | null> {
   if (!('serviceWorker' in navigator)) return null;
 
   let reg = await navigator.serviceWorker.getRegistration('/');
+
+  if (reg) {
+    if (reg.active) return reg;
+
+    // If registration exists but has no active/installing/waiting worker,
+    // it's a zombie (was previously unregistered). Clean it up.
+    if (!reg.installing && !reg.waiting && !reg.active) {
+      try { await reg.unregister(); } catch { /* ignore */ }
+      reg = undefined;
+    }
+  }
 
   if (!reg) {
     try {
