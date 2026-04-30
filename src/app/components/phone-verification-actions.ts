@@ -73,7 +73,6 @@ export async function sendPhoneOtp(phone: string): Promise<{ error?: string }> {
     });
 
     if (error) {
-      console.error('[sendPhoneOtp] Supabase error:', error.message, error.status);
       const lower = error.message?.toLowerCase() ?? '';
       const msg =
         lower.includes('rate')
@@ -129,7 +128,6 @@ export async function verifyPhoneOtp(
     });
 
     if (verifyError) {
-      console.error('[verifyPhoneOtp] Supabase error:', verifyError.message, verifyError.status);
       const lower = verifyError.message?.toLowerCase() ?? '';
       const msg =
         lower.includes('expired')
